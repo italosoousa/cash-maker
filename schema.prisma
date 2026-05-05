@@ -1,0 +1,157 @@
+// =============================================================================
+// CASH MAKER — Prisma Schema
+// Banco: PostgreSQL (Neon.tech)
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// USER
+// Usuário do sistema. Todos os dados são isolados por userId.
+// =============================================================================
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   // bcrypt hash, nunca texto puro
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  transactions   Transaction[]
+  categories     Category[]
+  fixedExpenses  FixedExpense[]
+
+  @@map("users")
+}
+
+// =============================================================================
+// CATEGORY
+// Categorias de transações. Cada usuário tem suas próprias.
+// As 7 categorias padrão são criadas automaticamente no cadastro.
+// =============================================================================
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String   @default("tag")        // nome do ícone Lucide
+  color     String   @default("#52B788")    // hex color
+  isDefault Boolean  @default(false)        // categorias padrão não podem ser excluídas
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  fixedExpenses FixedExpense[]
+
+  // Índices
+  @@index([userId])
+  @@map("categories")
+}
+
+// =============================================================================
+// TRANSACTION
+// Cada receita ou despesa lançada pelo usuário.
+// Soft delete: nunca remover do banco, usar deletedAt.
+// =============================================================================
+model Transaction {
+  id          String          @id @default(cuid())
+  type        TransactionType                       // INCOME | EXPENSE
+  amount      Decimal         @db.Decimal(12, 2)   // valor sempre positivo
+  description String
+  date        DateTime                              // data da transação (UTC)
+  notes       String?                              // observações opcionais
+  source      TransactionSource @default(MANUAL)   // MANUAL | AUTO (gerado por gasto fixo) | IMPORT
+
+  // Soft delete — RN02
+  deletedAt   DateTime?
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  // Referência opcional ao gasto fixo que gerou esta transação
+  fixedExpenseId String?
+  fixedExpense   FixedExpense? @relation(fields: [fixedExpenseId], references: [id])
+
+  // Índices — campos de busca frequente
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([userId, categoryId])
+  @@index([deletedAt])
+  @@map("transactions")
+}
+
+// =============================================================================
+// FIXED EXPENSE
+// Gastos fixos recorrentes. O cron job gera transações automaticamente
+// conforme a frequência definida.
+// =============================================================================
+model FixedExpense {
+  id          String           @id @default(cuid())
+  name        String
+  amount      Decimal          @db.Decimal(12, 2)
+  type        TransactionType                       // INCOME | EXPENSE
+  frequency   Frequency                             // DAILY | WEEKLY | MONTHLY | YEARLY
+  startDate   DateTime                              // data de início
+  endDate     DateTime?                             // data de fim (null = sem fim)
+  isActive    Boolean          @default(true)       // toggle ativo/inativo — RN05
+  nextDueDate DateTime                              // próxima data de geração
+  notes       String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  // Transações geradas por este gasto fixo
+  transactions Transaction[]
+
+  // Índices
+  @@index([userId])
+  @@index([isActive, nextDueDate])  // usado pelo cron job
+  @@map("fixed_expenses")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum TransactionType {
+  INCOME   // receita
+  EXPENSE  // despesa
+}
+
+enum TransactionSource {
+  MANUAL  // lançado manualmente pelo usuário
+  AUTO    // gerado automaticamente por gasto fixo
+  IMPORT  // importado de extrato bancário (feature futura)
+}
+
+enum Frequency {
+  DAILY    // diário
+  WEEKLY   // semanal
+  MONTHLY  // mensal
+  YEARLY   // anual
+}
