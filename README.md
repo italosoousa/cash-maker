@@ -64,8 +64,9 @@ O **Cash Maker** nasceu da necessidade de ter controle financeiro real, sem a co
 
 ### Pré-requisitos
 - Node.js 20+
-- npm ou yarn
-- Conta no [Neon.tech](https://neon.tech) (banco de dados gratuito)
+- Docker Desktop instalado e rodando
+
+---
 
 ### 1. Clone o repositório
 ```bash
@@ -80,31 +81,86 @@ npm install
 
 ### 3. Configure as variáveis de ambiente
 ```bash
-cp .env.example .env.local
+cp env.example .env.local
 ```
 
-Edite `.env.local` com suas credenciais:
+O `.env.local` já vem pré-configurado para o banco local via Docker. Se quiser usar outro banco, edite `DATABASE_URL`.
+
+Você também precisa de um `.env` para o Prisma CLI:
 ```bash
-DATABASE_URL="postgresql://..."
-NEXTAUTH_SECRET="sua-chave-secreta"
-NEXTAUTH_URL="http://localhost:3000"
+cp env.example .env
 ```
 
-### 4. Configure o banco de dados
+---
+
+### 4. Suba o banco de dados (Docker)
+
 ```bash
-# Aplicar as migrations
+docker compose up -d
+```
+
+Isso inicia um PostgreSQL 16 local com as credenciais:
+- **Host:** `localhost:5432`
+- **Usuário:** `cashmaker`
+- **Senha:** `cashmaker123`
+- **Banco:** `cashmaker_dev`
+- **URL:** `postgresql://cashmaker:cashmaker123@localhost:5432/cashmaker_dev`
+
+Para parar o banco:
+```bash
+docker compose down
+```
+
+Para parar e apagar os dados:
+```bash
+docker compose down -v
+```
+
+---
+
+### 5. Aplique as migrations do banco
+
+```bash
 npx prisma migrate dev
-
-# (Opcional) Popular com dados de exemplo
-npx prisma db seed
 ```
 
-### 5. Inicie o servidor de desenvolvimento
+Para visualizar o banco no browser (Prisma Studio):
+```bash
+npx prisma studio
+```
+
+---
+
+### 6. Inicie o servidor de desenvolvimento
+
 ```bash
 npm run dev
 ```
 
 Acesse [http://localhost:3000](http://localhost:3000)
+
+---
+
+### Resumo rápido (do zero ao ar)
+
+```bash
+# 1. Instalar dependências
+npm install
+
+# 2. Subir o banco
+docker compose up -d
+
+# 3. Copiar variáveis de ambiente
+cp env.example .env && cp env.example .env.local
+
+# 4. Aplicar migrations
+npx prisma migrate dev
+
+# 5. Rodar o frontend + backend
+npm run dev
+```
+
+> O Next.js serve tanto o frontend quanto o backend (API Routes) no mesmo processo. Não há servidor separado.
 
 ---
 

@@ -1,0 +1,464 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Expõe as CSS variables como tokens Tailwind v4 para uso como classes */
+@theme inline {
+  --color-green-deep:   var(--green-deep);
+  --color-green-mid:    var(--green-mid);
+  --color-green-soft:   var(--green-soft);
+  --color-green-mist:   var(--green-mist);
+  --color-green-frost:  var(--green-frost);
+  --color-green-air:    var(--green-air);
+  --color-ink-dark:     var(--ink-dark);
+  --color-ink-mid:      var(--ink-mid);
+  --color-ink-soft:     var(--ink-soft);
+  --color-ink-ghost:    var(--ink-ghost);
+  --color-status-ok:    var(--status-ok);
+  --color-status-err:   var(--status-err);
+  --color-status-warn:  var(--status-warn);
+  --color-status-info:  var(--status-info);
+  --font-sans:          var(--font-inter), system-ui, sans-serif;
+  --font-display:       var(--font-space-grotesk), system-ui, sans-serif;
+  --font-mono:          var(--font-mono), ui-monospace, monospace;
+}
+
+:root {
+  /* Verdes da marca */
+  --green-deep:   #2D6A4F;
+  --green-mid:    #52B788;
+  --green-soft:   #74C69D;
+  --green-mist:   #B7E4C7;
+  --green-frost:  #D8F3DC;
+  --green-air:    #F0FAF4;
+
+  /* Texto */
+  --ink-dark:     #1B3A2D;
+  --ink-mid:      #3D6B55;
+  --ink-soft:     #6B9E82;
+  --ink-ghost:    #9DC4AD;
+
+  /* Glass */
+  --glass-silver: #EEF2F0;
+  --glass-bg:     rgba(240, 250, 244, 0.72);
+  --glass-blur:   blur(20px) saturate(1.8);
+  --glass-border: rgba(183, 228, 199, 0.6);
+  --glass-shadow: 0 8px 32px rgba(45, 106, 79, 0.10);
+
+  /* Status */
+  --status-ok:    #52B788;
+  --status-err:   #E07A5F;
+  --status-warn:  #F2CC8F;
+  --status-info:  #81B29A;
+
+  /* Fontes */
+  --font-space-grotesk: var(--font-space-grotesk);
+  --font-inter: var(--font-inter);
+  --font-mono: var(--font-mono);
+
+  /* shadcn/ui tokens mapeados para o tema Cash Maker */
+  --background: 240 250 244;
+  --foreground: 27 58 45;
+  --card: 240 250 244;
+  --card-foreground: 27 58 45;
+  --popover: 240 250 244;
+  --popover-foreground: 27 58 45;
+  --primary: 82 183 136;
+  --primary-foreground: 255 255 255;
+  --secondary: 216 243 220;
+  --secondary-foreground: 27 58 45;
+  --muted: 238 242 240;
+  --muted-foreground: 107 158 130;
+  --accent: 183 228 199;
+  --accent-foreground: 27 58 45;
+  --destructive: 224 122 95;
+  --destructive-foreground: 255 255 255;
+  --border: 183 228 199;
+  --input: 183 228 199;
+  --ring: 82 183 136;
+  --radius: 0.75rem;
+  --sidebar:   240 250 244;
+  --sidebar-foreground:   27 58 45;
+  --sidebar-primary:   82 183 136;
+  --sidebar-primary-foreground:   255 255 255;
+  --sidebar-accent:   216 243 220;
+  --sidebar-accent-foreground:   27 58 45;
+  --sidebar-border:   183 228 199;
+  --sidebar-ring:   82 183 136;
+}
+
+[data-theme="dark"] {
+  --background: 13 31 23;
+  --foreground: 216 243 220;
+  --card: 30 60 45;
+  --card-foreground: 216 243 220;
+  --popover: 30 60 45;
+  --popover-foreground: 216 243 220;
+  --primary: 82 183 136;
+  --primary-foreground: 13 31 23;
+  --secondary: 45 106 79;
+  --secondary-foreground: 216 243 220;
+  --muted: 30 60 45;
+  --muted-foreground: 116 198 157;
+  --accent: 45 106 79;
+  --accent-foreground: 216 243 220;
+  --destructive: 224 122 95;
+  --destructive-foreground: 255 255 255;
+  --border: 82 183 136 / 25%;
+  --input: 82 183 136 / 25%;
+  --ring: 82 183 136;
+
+  --green-deep:   #74C69D;
+  --ink-dark:     #D8F3DC;
+  --ink-mid:      #74C69D;
+  --glass-bg:     rgba(30, 60, 45, 0.70);
+  --glass-border: rgba(82, 183, 136, 0.25);
+}
+
+* {
+  border-color: var(--glass-border);
+}
+
+body {
+  background-color: var(--green-air);
+  color: var(--ink-dark);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* ============================================================
+   GLASS CARD — componente visual principal do Cash Maker
+   ============================================================ */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 16px 40px rgba(45, 106, 79, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+/* Sidebar glass */
+.glass-sidebar {
+  background: rgba(240, 250, 244, 0.85);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border-right: 1px solid var(--glass-border);
+}
+
+/* Transições globais */
+a, button {
+  transition: color 150ms ease, background 150ms ease;
+}
+
+/* Skeleton */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  background: var(--green-frost);
+  border-radius: 8px;
+}
+
+/* Modal/Dialog enter */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-dialog {
+  animation: fadeInScale 250ms ease;
+}
+
+/* ============================================================
+   AUTH PAGES — Login e Cadastro
+   ============================================================ */
+
+/* Fundo com gradiente suave e orbs de luz */
+.auth-bg {
+  background: linear-gradient(
+    135deg,
+    var(--green-air) 0%,
+    var(--green-frost) 40%,
+    rgba(183, 228, 199, 0.4) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.auth-orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(82, 183, 136, 0.25) 0%, transparent 70%);
+  top: -150px;
+  right: -100px;
+}
+
+.auth-orb-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(116, 198, 157, 0.20) 0%, transparent 70%);
+  bottom: -120px;
+  left: -80px;
+}
+
+/* Input estilo glass */
+.auth-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  font-family: var(--font-inter), sans-serif;
+  color: var(--ink-dark);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.auth-input::placeholder {
+  color: var(--ink-ghost);
+}
+
+.auth-input:focus {
+  border-color: var(--green-mid);
+  box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.15);
+}
+
+.auth-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Label uppercase */
+.auth-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+/* Botão primário auth */
+.auth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--green-mid);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 4px 14px rgba(82, 183, 136, 0.35);
+}
+
+.auth-btn:hover:not(:disabled) {
+  background: var(--green-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(45, 106, 79, 0.35);
+}
+
+.auth-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.auth-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   DASHBOARD LAYOUT
+   ============================================================ */
+
+.dashboard-shell {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(
+    160deg,
+    var(--green-air) 0%,
+    rgba(216, 243, 220, 0.5) 50%,
+    var(--green-air) 100%
+  );
+  position: relative;
+}
+
+/* Sidebar */
+.sidebar-shell {
+  display: none;
+  width: 240px;
+  flex-shrink: 0;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: rgba(240, 250, 244, 0.88);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border-right: 1px solid var(--glass-border);
+  z-index: 30;
+}
+
+@media (min-width: 1024px) {
+  .sidebar-shell {
+    display: flex;
+  }
+}
+
+/* Nav items */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.5rem 0.625rem;
+  border-radius: 10px;
+  color: var(--ink-mid);
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.nav-item:hover {
+  background: var(--green-frost);
+  color: var(--green-deep);
+}
+
+.nav-item-active {
+  background: var(--green-frost);
+  color: var(--green-deep);
+  font-weight: 600;
+  border-left: 3px solid var(--green-mid);
+  padding-left: calc(0.625rem - 3px);
+}
+
+/* Área principal */
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-main {
+    padding-bottom: 0;
+  }
+}
+
+/* Header */
+.header-shell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(240, 250, 244, 0.80);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* Conteúdo */
+.dashboard-content {
+  flex: 1;
+  padding: 1.25rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-content {
+    padding: 2rem 2.5rem;
+  }
+}
+
+/* Bottom nav mobile */
+.bottom-nav-shell {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.5rem 0.75rem;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  background: rgba(240, 250, 244, 0.92);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border-top: 1px solid var(--glass-border);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0.375rem 0.75rem;
+  border-radius: 10px;
+  color: var(--ink-ghost);
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.bottom-nav-item:hover {
+  color: var(--green-mid);
+}
+
+.bottom-nav-item-active {
+  color: var(--green-deep);
+  font-weight: 600;
+}
+
+.dark {
+  --sidebar:   13 31 23;
+  --sidebar-foreground:   216 243 220;
+  --sidebar-primary:   82 183 136;
+  --sidebar-primary-foreground:   13 31 23;
+  --sidebar-accent:   45 106 79;
+  --sidebar-accent-foreground:   216 243 220;
+  --sidebar-border:   82 183 136 / 25%;
+  --sidebar-ring:   82 183 136;
+}
+
+@theme inline {
+  --color-sidebar:   var(--sidebar);
+  --color-sidebar-foreground:   var(--sidebar-foreground);
+  --color-sidebar-primary:   var(--sidebar-primary);
+  --color-sidebar-primary-foreground:   var(--sidebar-primary-foreground);
+  --color-sidebar-accent:   var(--sidebar-accent);
+  --color-sidebar-accent-foreground:   var(--sidebar-accent-foreground);
+  --color-sidebar-border:   var(--sidebar-border);
+  --color-sidebar-ring:   var(--sidebar-ring);
+}
