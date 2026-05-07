@@ -15,7 +15,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="bottom-nav-shell md:hidden">
+    <nav className="bottom-nav-shell">
       {NAV.slice(0, 2).map(({ href, label, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(href + '/')
         return (
