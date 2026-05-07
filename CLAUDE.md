@@ -4,6 +4,19 @@
 > decisões de produto, stack, design e regras de negócio do projeto.
 > **Sempre siga estas diretrizes antes de gerar qualquer código.**
 
+## Documentação técnica detalhada (`docs/`)
+
+| Arquivo | Conteúdo |
+|---------|----------|
+| [docs/architecture.md](docs/architecture.md) | Stack, estrutura de pastas, fluxo de request, padrões de componentes |
+| [docs/api-reference.md](docs/api-reference.md) | Todos os endpoints REST com body, response e erros |
+| [docs/database.md](docs/database.md) | Schema Prisma, models, padrões de query, migrations |
+| [docs/design-system.md](docs/design-system.md) | CSS variables, componentes, tipografia, regras visuais |
+| [docs/decisions/](docs/decisions/) | ADRs — registro de decisões arquiteturais |
+
+> Subpastas chave (`services/`, `components/`, `repositories/`, `app/api/`) também
+> possuem seus próprios `CLAUDE.md` com contexto específico de cada camada.
+
 ---
 
 ## 1. O que é o projeto
