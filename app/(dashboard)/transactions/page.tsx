@@ -102,7 +102,7 @@ export default function TransactionsPage() {
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
             Transações
@@ -111,7 +111,7 @@ export default function TransactionsPage() {
             {data ? `${data.total} transação${data.total !== 1 ? 'ões' : ''}` : '...'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setShowFilters(v => !v)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border transition-colors
@@ -120,7 +120,7 @@ export default function TransactionsPage() {
                 : 'border-[var(--glass-border)] text-[var(--ink-soft)] hover:bg-[var(--green-frost)]'}`}
           >
             <Filter size={15} />
-            Filtros
+            <span className="hidden xs:inline">Filtros</span>
             {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-[var(--green-mid)]" />}
           </button>
           <button onClick={openCreate} className="auth-btn px-4 py-2 text-sm gap-1.5">
@@ -131,19 +131,19 @@ export default function TransactionsPage() {
       </div>
 
       {/* Cards de resumo */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
         {[
           { label: 'Receitas',  value: totalIncome,           icon: TrendingUp,   color: 'var(--status-ok)' },
           { label: 'Despesas',  value: totalExpense,          icon: TrendingDown, color: 'var(--status-err)' },
           { label: 'Resultado', value: totalIncome - totalExpense, icon: Wallet, color: totalIncome >= totalExpense ? 'var(--status-ok)' : 'var(--status-err)' },
         ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="glass-card px-4 py-3 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '22' }}>
-              <Icon size={18} style={{ color }} />
+          <div key={label} className="glass-card px-3 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '22' }}>
+              <Icon size={16} style={{ color }} />
             </div>
-            <div>
-              <p className="text-xs font-medium text-[var(--ink-ghost)]">{label}</p>
-              <p className="font-[var(--font-mono)] font-bold text-base" style={{ color }}>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs font-medium text-[var(--ink-ghost)]">{label}</p>
+              <p className="font-[var(--font-mono)] font-bold text-sm sm:text-base truncate" style={{ color }}>
                 {formatCurrency(value)}
               </p>
             </div>
@@ -153,7 +153,7 @@ export default function TransactionsPage() {
 
       {/* Painel de filtros */}
       {showFilters && (
-        <div className="glass-card p-4 mb-4 grid grid-cols-2 sm:grid-cols-4 gap-3 animate-dialog">
+        <div className="glass-card p-4 mb-4 grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-3 animate-dialog">
           {/* Tipo */}
           <div className="space-y-1">
             <label className="auth-label">Tipo</label>

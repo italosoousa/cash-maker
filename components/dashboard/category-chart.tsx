@@ -71,10 +71,10 @@ export function CategoryChart({ data }: CategoryChartProps) {
         <p className="text-xs text-[var(--ink-ghost)] mt-0.5">No período selecionado</p>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col xs:flex-row items-center gap-4">
         {/* Donut */}
-        <div className="shrink-0">
-          <ResponsiveContainer width={140} height={140}>
+        <div className="shrink-0 w-full xs:w-auto">
+          <ResponsiveContainer width="100%" height={140} className="xs:!w-[140px]">
             <PieChart>
               <Pie
                 data={top}

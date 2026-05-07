@@ -2,6 +2,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Breakpoint xs — 480px (abaixo do sm=640px do Tailwind) */
+@custom-variant xs (@media (width >= 480px));
+
 /* Expõe as CSS variables como tokens Tailwind v4 para uso como classes */
 @theme inline {
   --color-green-deep:   var(--green-deep);
@@ -139,12 +142,15 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-.glass-card:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 16px 40px rgba(45, 106, 79, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: transform 200ms ease, box-shadow 200ms ease;
+/* Lift only on devices that support hover (not touch) */
+@media (hover: hover) {
+  .glass-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 16px 40px rgba(45, 106, 79, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: transform 200ms ease, box-shadow 200ms ease;
+  }
 }
 
 /* Sidebar glass */
@@ -158,6 +164,21 @@ body {
 /* Transições globais */
 a, button {
   transition: color 150ms ease, background 150ms ease;
+}
+
+/* Scrollbar invisível — usada no period selector mobile */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent text size adjustment on mobile */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Skeleton */
@@ -388,7 +409,16 @@ a, button {
 /* Conteúdo */
 .dashboard-content {
   flex: 1;
-  padding: 1.25rem 1rem;
+  padding: 1rem 0.875rem;
+  /* Prevent horizontal overflow on mobile */
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .dashboard-content {
+    padding: 1.25rem 1.25rem;
+  }
 }
 
 @media (min-width: 768px) {

@@ -86,11 +86,11 @@ export function BalanceChart({ data }: BalanceChartProps) {
             tickLine={false}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: 'var(--ink-ghost)', fontFamily: 'var(--font-inter)' }}
+            tick={{ fontSize: 10, fill: 'var(--ink-ghost)', fontFamily: 'var(--font-inter)' }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={v => v === 0 ? '0' : 'R$ ' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)}
-            width={56}
+            tickFormatter={v => v === 0 ? '0' : (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)}
+            width={32}
           />
           <Tooltip
             content={<CustomTooltip />}

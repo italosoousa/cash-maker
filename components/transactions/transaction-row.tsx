@@ -47,7 +47,7 @@ export function TransactionRow({ transaction, onEdit, onDelete }: TransactionRow
         <p className={`text-sm font-medium truncate ${isDeleted ? 'line-through' : 'text-[var(--ink-dark)]'}`}>
           {description}
         </p>
-        <p className="text-xs text-[var(--ink-ghost)] mt-0.5">
+        <p className="text-xs text-[var(--ink-ghost)] mt-0.5 truncate">
           {category?.name} · {formatDate(date)}
         </p>
       </div>
@@ -66,9 +66,9 @@ export function TransactionRow({ transaction, onEdit, onDelete }: TransactionRow
           {formatAmount(Number(amount), type)}
         </span>
 
-        {/* Ações — aparecem no hover */}
+        {/* Ações — sempre visíveis no mobile, hover no desktop */}
         {!isDeleted && (
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+          <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ml-1">
             <button
               onClick={onEdit}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--ink-ghost)] hover:bg-[var(--green-frost)] hover:text-[var(--green-deep)] transition-colors"

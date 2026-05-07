@@ -66,7 +66,7 @@ export default function CategoriesPage() {
   return (
     <>
       {/* Header da página */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
             Categorias
@@ -75,9 +75,9 @@ export default function CategoriesPage() {
             Organize suas transações por categoria
           </p>
         </div>
-        <button onClick={openCreate} className="auth-btn px-4 py-2 text-sm gap-1.5">
+        <button onClick={openCreate} className="auth-btn px-4 py-2 text-sm gap-1.5 shrink-0">
           <Plus size={16} />
-          Nova categoria
+          <span className="hidden xs:inline">Nova </span>categoria
         </button>
       </div>
 
@@ -198,7 +198,7 @@ function CategoryCard({
           <Icon size={20} style={{ color: category.color }} />
         </div>
 
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
           <button
             onClick={onEdit}
             className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--ink-ghost)] hover:bg-[var(--green-frost)] hover:text-[var(--green-deep)] transition-colors"

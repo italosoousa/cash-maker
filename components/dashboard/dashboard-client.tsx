@@ -158,22 +158,24 @@ export function DashboardClient({ firstName }: DashboardClientProps) {
           </p>
         </div>
 
-        {/* Period selector */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--green-frost)] border border-[var(--green-mist)]">
-          {PERIODS.map(p => (
-            <button
-              key={p.key}
-              onClick={() => setPeriod(p.key)}
-              className={cn(
-                'text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-150',
-                period === p.key
-                  ? 'bg-white text-[var(--green-deep)] shadow-sm'
-                  : 'text-[var(--ink-soft)] hover:text-[var(--ink-mid)]'
-              )}
-            >
-              {p.label}
-            </button>
-          ))}
+        {/* Period selector — scrollable on small screens */}
+        <div className="overflow-x-auto scrollbar-none -mx-1 px-1 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--green-frost)] border border-[var(--green-mist)] min-w-max">
+            {PERIODS.map(p => (
+              <button
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
+                className={cn(
+                  'text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap',
+                  period === p.key
+                    ? 'bg-white text-[var(--green-deep)] shadow-sm'
+                    : 'text-[var(--ink-soft)] hover:text-[var(--ink-mid)]'
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

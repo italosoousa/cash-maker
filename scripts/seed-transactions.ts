@@ -9,7 +9,7 @@
  *   npx tsx scripts/seed-transactions.ts --user ana@cashmaker.dev   # apenas 1 usuário
  */
 
-import { PrismaClient, TransactionType } from '@prisma/client'
+import { PrismaClient, Prisma, TransactionType } from '@prisma/client'
 
 const prisma = new PrismaClient()
 const args   = process.argv.slice(2)
@@ -158,7 +158,7 @@ async function seedUser(userId: string, userName: string) {
   }
 
   const months = getLast12Months()
-  const batch: Parameters<typeof prisma.transaction.createMany>[0]['data'] = []
+  const batch: Prisma.TransactionCreateManyInput[] = []
 
   for (const { year, month } of months) {
     const isJanuary  = month === 0
