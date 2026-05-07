@@ -2,6 +2,7 @@
   "name": "cash-maker",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.0.8",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -36,6 +37,16 @@
     "tailwind-merge": "^3.5.0",
     "vaul": "^1.1.2",
     "zod": "^3.25.76"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
