@@ -32,7 +32,7 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
         )}
 
         {/* Barra de busca — desktop */}
-        <div className="hidden md:flex flex-1 max-w-sm items-center gap-2 bg-white/60 backdrop-blur-sm border border-[var(--glass-border)] rounded-xl px-3 py-2 text-sm text-[var(--ink-ghost)] group focus-within:border-[var(--green-mid)] focus-within:shadow-[0_0_0_3px_rgba(82,183,136,0.12)] transition-all">
+        <div className="hidden md:flex flex-1 max-w-sm items-center gap-2 bg-white/70 border border-[var(--glass-border)] rounded-xl px-3 py-2 focus-within:border-[var(--green-mid)] focus-within:shadow-[0_0_0_3px_rgba(82,183,136,0.12)] transition-all shadow-sm">
           <Search size={15} className="shrink-0 text-[var(--ink-ghost)]" />
           <input
             type="search"
@@ -45,7 +45,7 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
       {/* Ações */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Notificações */}
-        <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[var(--ink-soft)] hover:bg-[var(--green-frost)] transition-colors">
+        <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[var(--ink-soft)] bg-white/70 border border-[var(--glass-border)] shadow-sm hover:bg-white transition-colors">
           <Bell size={18} />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--status-err)] rounded-full" />
         </button>
@@ -54,7 +54,7 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
         <div className="relative">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-[var(--green-frost)] transition-colors"
+            className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-xl bg-white/70 border border-[var(--glass-border)] shadow-sm hover:bg-white transition-colors"
           >
             <div className="w-8 h-8 rounded-full bg-[var(--green-mid)] text-white flex items-center justify-center text-xs font-bold">
               {initials}

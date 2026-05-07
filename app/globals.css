@@ -330,7 +330,7 @@ html {
   position: relative;
 }
 
-/* Sidebar */
+/* Sidebar — transparente, sem borda divisória */
 .sidebar-shell {
   display: none;
   width: 240px;
@@ -339,10 +339,7 @@ html {
   height: 100vh;
   position: sticky;
   top: 0;
-  background: rgba(240, 250, 244, 0.88);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  border-right: 1px solid var(--glass-border);
+  background: transparent;
   z-index: 30;
 }
 
@@ -364,16 +361,15 @@ html {
 }
 
 .nav-item:hover {
-  background: var(--green-frost);
+  background: rgba(255, 255, 255, 0.6);
   color: var(--green-deep);
 }
 
 .nav-item-active {
-  background: var(--green-frost);
+  background: white;
   color: var(--green-deep);
   font-weight: 600;
-  border-left: 3px solid var(--green-mid);
-  padding-left: calc(0.625rem - 3px);
+  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.10);
 }
 
 /* Área principal */
@@ -391,16 +387,13 @@ html {
   }
 }
 
-/* Header */
+/* Header — transparente, sem borda inferior */
 .header-shell {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.875rem 1.25rem;
-  background: rgba(240, 250, 244, 0.80);
-  backdrop-filter: blur(20px) saturate(1.8);
-  -webkit-backdrop-filter: blur(20px) saturate(1.8);
-  border-bottom: 1px solid var(--glass-border);
+  padding: 1rem 1.25rem;
+  background: transparent;
   position: sticky;
   top: 0;
   z-index: 20;

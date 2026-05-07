@@ -48,7 +48,7 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
   return (
     <aside className="sidebar-shell">
       {/* Logo */}
-      <div className="px-5 pt-6 pb-4 border-b border-[var(--glass-border)]">
+      <div className="px-5 pt-6 pb-4">
         <Link href="/dashboard" className="flex items-center gap-3">
           <Image src="/logo-icone.svg" alt="Cash Maker" width={36} height={36} />
           <div>
@@ -97,8 +97,8 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
       </nav>
 
       {/* Usuário + logout */}
-      <div className="px-3 pb-5 pt-3 border-t border-[var(--glass-border)]">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-[var(--green-frost)] transition-colors group">
+      <div className="px-3 pb-5 pt-3">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/60 border border-[var(--glass-border)] hover:bg-white transition-colors group shadow-sm">
           <div className="w-8 h-8 rounded-full bg-[var(--green-mid)] text-white flex items-center justify-center text-xs font-bold shrink-0">
             {initials}
           </div>
