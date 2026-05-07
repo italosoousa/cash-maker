@@ -102,16 +102,16 @@ function GreetingCard({
   return (
     <div className="glass-card p-5 flex flex-col justify-between gap-5 min-h-[148px]">
       <div className="flex items-center justify-between">
-        <div className="w-10 h-10 rounded-full bg-[var(--green-mid)] flex items-center justify-center text-white font-bold text-sm shrink-0">
+        <div className="w-10 h-10 rounded-full bg-[var(--gray-800)] flex items-center justify-center text-white font-bold text-sm shrink-0">
           {initials}
         </div>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-ghost)]">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)]">
           Saldo total
         </span>
       </div>
 
       <div>
-        <p className="text-sm text-[var(--ink-soft)] mb-1.5">Olá, {firstName} 👋</p>
+        <p className="text-sm text-[var(--gray-500)] mb-1.5">Olá, {firstName} 👋</p>
         {loading ? (
           <div className="skeleton h-9 w-40 rounded-lg" />
         ) : (
@@ -138,24 +138,26 @@ function StatCard({
   type:      'income' | 'expense'
   loading:   boolean
 }) {
-  const color = type === 'income' ? 'var(--status-ok)' : 'var(--status-err)'
+  const color = type === 'income' ? 'var(--status-income)' : 'var(--status-expense)'
   const isNeg = typeof variation === 'number' && variation < 0
   const Icon  = type === 'income' ? TrendingUp : TrendingDown
 
   return (
-    <div className="glass-card p-5 flex flex-col gap-4 min-h-[148px]">
+    <div className={cn('p-5 flex flex-col gap-4 min-h-[148px]', type === 'income' ? 'glass-card-income' : 'glass-card-expense')}>
       {/* Label + badge */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: color + '22' }}>
             <Icon size={16} style={{ color }} />
           </div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--ink-ghost)]">{label}</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gray-500)]">{label}</p>
         </div>
         {typeof variation === 'number' && !loading && (
           <span className={cn(
             'flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0',
-            isNeg ? 'bg-red-50 text-[var(--status-err)]' : 'bg-[var(--green-frost)] text-[var(--status-ok)]'
+            isNeg
+              ? 'bg-[rgba(244,230,226,0.8)] text-[var(--status-expense)]'
+              : 'bg-[var(--green-frost)] text-[var(--status-income)]'
           )}>
             {isNeg ? <TrendingDown size={10} /> : <TrendingUp size={10} />}
             {Math.abs(variation)}%
@@ -171,7 +173,7 @@ function StatCard({
           ) : (
             <CurrencyDisplay value={value ?? 0} type={type} size="lg" />
           )}
-          <p className="text-[10px] text-[var(--ink-ghost)] mt-1">Este período</p>
+          <p className="text-[10px] text-[var(--gray-500)] mt-1">Este período</p>
         </div>
         {!loading && sparkData.length > 1 && (
           <div className="shrink-0 opacity-80">
@@ -191,30 +193,30 @@ function TransactionsTable({
   return (
     <div className="glass-card overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--glass-border)]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--gray-300)]">
         <div>
-          <h3 className="text-sm font-semibold text-[var(--ink-dark)]">Últimas Transações</h3>
-          <p className="text-xs text-[var(--ink-ghost)] mt-0.5">Movimentações recentes da conta</p>
+          <h3 className="text-sm font-semibold text-[var(--gray-900)]">Últimas Transações</h3>
+          <p className="text-xs text-[var(--gray-500)] mt-0.5">Movimentações recentes da conta</p>
         </div>
         <Link
           href="/transactions"
-          className="flex items-center gap-1 text-xs font-semibold text-[var(--green-mid)] hover:text-[var(--green-deep)] transition-colors"
+          className="flex items-center gap-1 text-xs font-semibold text-[var(--gray-700)] hover:text-[var(--gray-900)] transition-colors"
         >
           Ver todas <ArrowRight size={12} />
         </Link>
       </div>
 
       {/* Column headers */}
-      <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-2.5 border-b border-[var(--glass-border)]/60 bg-[var(--green-air)]/40">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-ghost)]">Descrição</p>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-ghost)] hidden sm:block">Categoria</p>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-ghost)] hidden sm:block">Data</p>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-ghost)] text-right">Valor</p>
+      <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-2.5 border-b border-[var(--gray-300)]/60 bg-[var(--gray-100)]/60">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)]">Descrição</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)] hidden sm:block">Categoria</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)] hidden sm:block">Data</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)] text-right">Valor</p>
       </div>
 
       {/* Rows */}
       {loading ? (
-        <div className="divide-y divide-[var(--glass-border)]/40">
+        <div className="divide-y divide-[var(--gray-300)]/40">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 items-center px-5 py-3.5">
               <div className="flex items-center gap-3">
@@ -228,22 +230,22 @@ function TransactionsTable({
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-14 gap-2 text-[var(--ink-ghost)]">
+        <div className="flex flex-col items-center justify-center py-14 gap-2 text-[var(--gray-500)]">
           <Receipt size={32} strokeWidth={1.5} />
           <p className="text-sm">Nenhuma transação ainda</p>
-          <Link href="/transactions" className="text-xs font-semibold text-[var(--green-mid)] hover:underline mt-1">
+          <Link href="/transactions" className="text-xs font-semibold text-[var(--gray-700)] hover:underline mt-1">
             Adicionar transação
           </Link>
         </div>
       ) : (
-        <div className="divide-y divide-[var(--glass-border)]/40">
+        <div className="divide-y divide-[var(--gray-300)]/40">
           {transactions.map(tx => {
             const isIncome = tx.type === 'INCOME'
             const Icon     = tx.category ? getLucideIcon(tx.category.icon) : Tag
             return (
               <div
                 key={tx.id}
-                className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 items-center px-5 py-3.5 hover:bg-white/30 transition-colors"
+                className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 items-center px-5 py-3.5 hover:bg-[var(--gray-100)] transition-colors"
               >
                 {/* Description + icon */}
                 <div className="flex items-center gap-3 min-w-0">
@@ -251,21 +253,21 @@ function TransactionsTable({
                     className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                     style={tx.category
                       ? { background: tx.category.color + '22', border: `1.5px solid ${tx.category.color}` }
-                      : { background: 'var(--green-frost)', border: '1.5px solid var(--glass-border)' }
+                      : { background: 'var(--gray-100)', border: '1.5px solid var(--gray-300)' }
                     }
                   >
-                    <Icon size={14} style={{ color: tx.category?.color ?? 'var(--ink-soft)' }} />
+                    <Icon size={14} style={{ color: tx.category?.color ?? 'var(--gray-500)' }} />
                   </div>
-                  <span className="text-sm font-medium text-[var(--ink-dark)] truncate">{tx.description}</span>
+                  <span className="text-sm font-medium text-[var(--gray-900)] truncate">{tx.description}</span>
                 </div>
 
                 {/* Category */}
-                <span className="hidden sm:block text-xs text-[var(--ink-soft)] whitespace-nowrap">
+                <span className="hidden sm:block text-xs text-[var(--gray-500)] whitespace-nowrap">
                   {tx.category?.name ?? 'Outros'}
                 </span>
 
                 {/* Date */}
-                <span className="hidden sm:block text-xs text-[var(--ink-soft)] whitespace-nowrap">
+                <span className="hidden sm:block text-xs text-[var(--gray-500)] whitespace-nowrap">
                   {formatDate(tx.date)}
                 </span>
 
@@ -302,7 +304,7 @@ function RightPanel({
     <aside className="flex flex-col gap-4">
       {/* Period selector */}
       <div className="glass-card p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-ghost)] mb-3">Período</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3">Período</p>
         <div className="space-y-1">
           {PERIODS.map(p => (
             <button
@@ -311,8 +313,8 @@ function RightPanel({
               className={cn(
                 'w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all',
                 period === p.key
-                  ? 'bg-[var(--green-mid)] text-white shadow-sm'
-                  : 'text-[var(--ink-mid)] hover:bg-[var(--green-frost)]'
+                  ? 'bg-[var(--gray-900)] text-white shadow-sm'
+                  : 'text-[var(--gray-700)] hover:bg-[var(--gray-100)]'
               )}
             >
               {p.label}
@@ -323,7 +325,7 @@ function RightPanel({
 
       {/* Period balance summary */}
       <div className="glass-card p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-ghost)] mb-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3">
           Resumo do período
         </p>
         {loading ? (
@@ -342,28 +344,28 @@ function RightPanel({
             <div className="mt-3 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[var(--status-ok)]" />
-                  <span className="text-xs text-[var(--ink-soft)]">Receitas</span>
+                  <span className="w-2 h-2 rounded-full bg-[var(--status-income)]" />
+                  <span className="text-xs text-[var(--gray-500)]">Receitas</span>
                 </div>
-                <span className="text-xs font-semibold text-[var(--status-ok)]">
+                <span className="text-xs font-semibold text-[var(--status-income)]">
                   {fmt(summary?.periodIncome ?? 0)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[var(--status-err)]" />
-                  <span className="text-xs text-[var(--ink-soft)]">Despesas</span>
+                  <span className="w-2 h-2 rounded-full bg-[var(--status-expense)]" />
+                  <span className="text-xs text-[var(--gray-500)]">Despesas</span>
                 </div>
-                <span className="text-xs font-semibold text-[var(--status-err)]">
+                <span className="text-xs font-semibold text-[var(--status-expense)]">
                   {fmt(summary?.periodExpense ?? 0)}
                 </span>
               </div>
 
               {/* Progress bar */}
               {(summary?.periodIncome ?? 0) > 0 && (
-                <div className="mt-1 h-1.5 rounded-full bg-[var(--green-frost)] overflow-hidden">
+                <div className="mt-1 h-1.5 rounded-full bg-[var(--gray-200)] overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[var(--status-err)] transition-all duration-500"
+                    className="h-full rounded-full bg-[var(--status-expense)] transition-all duration-500"
                     style={{
                       width: `${Math.min(100, ((summary?.periodExpense ?? 0) / (summary?.periodIncome ?? 1)) * 100).toFixed(1)}%`
                     }}
@@ -377,7 +379,7 @@ function RightPanel({
 
       {/* Top categories */}
       <div className="glass-card p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-ghost)] mb-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3">
           Top categorias
         </p>
         {loading ? (
@@ -391,7 +393,7 @@ function RightPanel({
             ))}
           </div>
         ) : categories.length === 0 ? (
-          <p className="text-xs text-[var(--ink-ghost)] text-center py-2">Nenhuma despesa</p>
+          <p className="text-xs text-[var(--gray-500)] text-center py-2">Nenhuma despesa</p>
         ) : (
           <div className="space-y-2.5">
             {categories.slice(0, 5).map(cat => {
@@ -404,8 +406,8 @@ function RightPanel({
                   >
                     <Icon size={11} style={{ color: cat.color }} />
                   </div>
-                  <span className="text-xs text-[var(--ink-mid)] flex-1 truncate">{cat.name}</span>
-                  <span className="text-xs font-semibold text-[var(--ink-dark)] shrink-0">
+                  <span className="text-xs text-[var(--gray-700)] flex-1 truncate">{cat.name}</span>
+                  <span className="text-xs font-semibold text-[var(--gray-900)] shrink-0">
                     {cat.percentage}%
                   </span>
                 </div>
@@ -453,8 +455,8 @@ export function DashboardClient({ firstName }: { firstName: string }) {
         {/* Negative balance alert — RN01 */}
         {!loading && s && s.balance < 0 && (
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 border border-red-200">
-            <AlertTriangle size={15} className="text-[var(--status-err)] shrink-0" />
-            <p className="text-sm text-[var(--status-err)] font-medium">
+            <AlertTriangle size={15} className="text-[var(--status-expense)] shrink-0" />
+            <p className="text-sm text-[var(--status-expense)] font-medium">
               Seu saldo está negativo. Fique atento às despesas!
             </p>
           </div>

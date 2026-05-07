@@ -68,10 +68,10 @@ export default function CategoriesPage() {
       {/* Header da página */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
+          <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
             Categorias
           </h1>
-          <p className="text-sm text-[var(--ink-soft)] mt-0.5">
+          <p className="text-sm text-[var(--gray-500)] mt-0.5">
             Organize suas transações por categoria
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function CategoriesPage() {
         <div className="space-y-6">
           {/* Padrão */}
           <section>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--ink-ghost)] mb-3 flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3 flex items-center gap-2">
               <ShieldCheck size={13} />
               Padrão do sistema
             </p>
@@ -109,7 +109,7 @@ export default function CategoriesPage() {
           {/* Personalizadas */}
           {customCats.length > 0 && (
             <section>
-              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--ink-ghost)] mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3">
                 Personalizadas
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -128,7 +128,7 @@ export default function CategoriesPage() {
           {customCats.length === 0 && (
             <button
               onClick={openCreate}
-              className="w-full border-2 border-dashed border-[var(--glass-border)] rounded-2xl py-10 flex flex-col items-center gap-2 text-[var(--ink-ghost)] hover:border-[var(--green-mid)] hover:text-[var(--green-mid)] transition-colors"
+              className="w-full border-2 border-dashed border-[var(--gray-300)] rounded-2xl py-10 flex flex-col items-center gap-2 text-[var(--gray-500)] hover:border-[var(--gray-500)] hover:text-[var(--gray-700)] transition-colors"
             >
               <Plus size={24} />
               <span className="text-sm font-medium">Criar primeira categoria personalizada</span>
@@ -141,7 +141,7 @@ export default function CategoriesPage() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="glass-card border-0 sm:max-w-md animate-dialog">
           <DialogHeader>
-            <DialogTitle className="text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
+            <DialogTitle className="text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
               {editing ? 'Editar categoria' : 'Nova categoria'}
             </DialogTitle>
           </DialogHeader>
@@ -157,17 +157,17 @@ export default function CategoriesPage() {
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent className="glass-card border-0">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[var(--ink-dark)]">Excluir categoria?</AlertDialogTitle>
-            <AlertDialogDescription className="text-[var(--ink-soft)]">
+            <AlertDialogTitle className="text-[var(--gray-900)]">Excluir categoria?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[var(--gray-500)]">
               A categoria <strong>{deleting?.name}</strong> será excluída permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-[var(--glass-border)]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="border-[var(--gray-300)]">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleteLoading}
-              className="bg-[var(--status-err)] hover:bg-red-600 text-white"
+              className="bg-[var(--status-expense)] hover:bg-red-600 text-white"
             >
               {deleteLoading ? <Loader2 size={14} className="animate-spin" /> : 'Excluir'}
             </AlertDialogAction>
@@ -201,7 +201,7 @@ function CategoryCard({
         <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
           <button
             onClick={onEdit}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--ink-ghost)] hover:bg-[var(--green-frost)] hover:text-[var(--green-deep)] transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--gray-500)] hover:bg-[var(--gray-100)] hover:text-[var(--gray-900)] transition-colors"
             title="Editar"
           >
             <Pencil size={13} />
@@ -209,7 +209,7 @@ function CategoryCard({
           {!category.isDefault && onDelete && (
             <button
               onClick={onDelete}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--ink-ghost)] hover:bg-red-50 hover:text-[var(--status-err)] transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--gray-500)] hover:bg-red-50 hover:text-[var(--status-expense)] transition-colors"
               title="Excluir"
             >
               <Trash2 size={13} />
@@ -219,14 +219,14 @@ function CategoryCard({
       </div>
 
       <div>
-        <p className="font-semibold text-[var(--ink-dark)] text-sm">{category.name}</p>
-        <p className="text-xs text-[var(--ink-ghost)] mt-0.5">
+        <p className="font-semibold text-[var(--gray-900)] text-sm">{category.name}</p>
+        <p className="text-xs text-[var(--gray-500)] mt-0.5">
           {count} {count === 1 ? 'transação' : 'transações'}
         </p>
       </div>
 
       {category.isDefault && (
-        <span className="self-start text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--green-frost)] text-[var(--green-deep)]">
+        <span className="self-start text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--gray-200)] text-[var(--gray-500)]">
           Padrão
         </span>
       )}

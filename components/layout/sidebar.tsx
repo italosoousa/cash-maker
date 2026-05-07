@@ -52,10 +52,10 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
         <Link href="/dashboard" className="flex items-center gap-3">
           <Image src="/logo-icone.svg" alt="Cash Maker" width={36} height={36} />
           <div>
-            <span className="text-base font-bold text-[var(--green-deep)] font-[var(--font-space-grotesk)] leading-none block">
+            <span className="text-base font-bold text-[var(--green-brand)] font-[var(--font-space-grotesk)] leading-none block">
               Cash Maker
             </span>
-            <span className="text-[10px] tracking-widest text-[var(--ink-ghost)] leading-none">
+            <span className="text-[10px] tracking-widest text-[var(--gray-500)] leading-none">
               ORGANIZE · CRESÇA
             </span>
           </div>
@@ -64,7 +64,7 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
 
       {/* Navegação */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--ink-ghost)] px-2 mb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)] px-2 mb-2">
           Menu
         </p>
 
@@ -78,18 +78,18 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
               className={cn(
                 'nav-item',
                 active && 'nav-item-active',
-                soon && 'opacity-60 cursor-default'
+                soon && 'opacity-50 cursor-default'
               )}
             >
               <Icon size={18} className="shrink-0" />
               <span className="flex-1 text-sm font-medium">{label}</span>
               {soon && (
-                <span className="text-[10px] font-semibold bg-[var(--green-frost)] text-[var(--green-deep)] px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-semibold bg-[var(--gray-200)] text-[var(--gray-500)] px-1.5 py-0.5 rounded-full">
                   Em breve
                 </span>
               )}
               {active && !soon && (
-                <ChevronRight size={14} className="text-[var(--green-mid)] opacity-60" />
+                <ChevronRight size={14} className="text-[var(--gray-500)] opacity-60" />
               )}
             </Link>
           )
@@ -98,17 +98,17 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
 
       {/* Usuário + logout */}
       <div className="px-3 pb-5 pt-3">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/60 border border-[var(--glass-border)] hover:bg-white transition-colors group shadow-sm">
-          <div className="w-8 h-8 rounded-full bg-[var(--green-mid)] text-white flex items-center justify-center text-xs font-bold shrink-0">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/60 border border-[var(--gray-300)] hover:bg-white transition-colors group shadow-sm">
+          <div className="w-8 h-8 rounded-full bg-[var(--gray-800)] text-white flex items-center justify-center text-xs font-bold shrink-0">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[var(--ink-dark)] truncate">{userName}</p>
-            <p className="text-xs text-[var(--ink-ghost)] truncate">{userEmail}</p>
+            <p className="text-sm font-semibold text-[var(--gray-900)] truncate">{userName}</p>
+            <p className="text-xs text-[var(--gray-500)] truncate">{userEmail}</p>
           </div>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="text-[var(--ink-ghost)] hover:text-[var(--status-err)] transition-colors p-1 rounded-lg"
+            className="text-[var(--gray-500)] hover:text-[var(--status-expense)] transition-colors p-1 rounded-lg"
             title="Sair"
           >
             <LogOut size={15} />

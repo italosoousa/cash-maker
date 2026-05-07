@@ -70,10 +70,10 @@ export default function LoginPage() {
         {/* Card glass */}
         <div className="glass-card p-8">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
+            <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
               Entrar na conta
             </h1>
-            <p className="text-sm text-[var(--ink-soft)] mt-1">
+            <p className="text-sm text-[var(--gray-500)] mt-1">
               Bem-vindo de volta. Insira suas credenciais.
             </p>
           </div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="email"
-                className="text-xs font-medium uppercase tracking-wide text-[var(--ink-soft)]"
+                className="text-xs font-medium uppercase tracking-wide text-[var(--gray-500)]"
               >
                 E-mail
               </label>
@@ -101,7 +101,7 @@ export default function LoginPage() {
                 disabled={loading}
               />
               {errors.email && (
-                <p className="text-xs text-[var(--status-err)]">{errors.email}</p>
+                <p className="text-xs text-[var(--status-expense)]">{errors.email}</p>
               )}
             </div>
 
@@ -110,13 +110,13 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="password"
-                  className="text-xs font-medium uppercase tracking-wide text-[var(--ink-soft)]"
+                  className="text-xs font-medium uppercase tracking-wide text-[var(--gray-500)]"
                 >
                   Senha
                 </label>
                 <Link
                   href="#"
-                  className="text-xs text-[var(--green-mid)] hover:text-[var(--green-deep)] transition-colors"
+                  className="text-xs text-[var(--gray-500)] hover:text-[var(--gray-700)] transition-colors"
                 >
                   Esqueci a senha
                 </Link>
@@ -138,14 +138,14 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-ghost)] hover:text-[var(--ink-soft)] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--gray-500)] hover:text-[var(--gray-700)] transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-xs text-[var(--status-err)]">{errors.password}</p>
+                <p className="text-xs text-[var(--status-expense)]">{errors.password}</p>
               )}
             </div>
 
@@ -166,18 +166,18 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-[var(--ink-soft)] mt-6">
+          <p className="text-center text-sm text-[var(--gray-500)] mt-6">
             Não tem conta?{' '}
             <Link
               href="/register"
-              className="text-[var(--green-mid)] font-medium hover:text-[var(--green-deep)] transition-colors"
+              className="text-[var(--gray-900)] font-medium hover:text-[var(--gray-700)] transition-colors"
             >
               Criar conta gratuita
             </Link>
           </p>
         </div>
 
-        <p className="text-center text-xs text-[var(--ink-ghost)] mt-6">
+        <p className="text-center text-xs text-[var(--gray-500)] mt-6">
           Cash Maker · Organize. Controle. Cresça.
         </p>
       </div>

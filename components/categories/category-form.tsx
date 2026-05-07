@@ -88,7 +88,7 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Preview */}
-      <div className="flex items-center gap-4 p-4 rounded-2xl border border-[var(--glass-border)] bg-white/40">
+      <div className="flex items-center gap-4 p-4 rounded-2xl border border-[var(--gray-300)] bg-white/40">
         <div
           className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: form.color + '22', border: `2px solid ${form.color}` }}
@@ -96,8 +96,8 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
           {PreviewIcon && <PreviewIcon size={22} style={{ color: form.color }} />}
         </div>
         <div>
-          <p className="font-semibold text-[var(--ink-dark)]">{form.name || 'Nome da categoria'}</p>
-          <p className="text-xs text-[var(--ink-ghost)]">Prévia</p>
+          <p className="font-semibold text-[var(--gray-900)]">{form.name || 'Nome da categoria'}</p>
+          <p className="text-xs text-[var(--gray-500)]">Prévia</p>
         </div>
       </div>
 
@@ -113,7 +113,7 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
           disabled={loading}
           maxLength={50}
         />
-        {errors.name && <p className="text-xs text-[var(--status-err)]">{errors.name}</p>}
+        {errors.name && <p className="text-xs text-[var(--status-expense)]">{errors.name}</p>}
       </div>
 
       {/* Ícone */}
@@ -132,11 +132,11 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
                 className="w-9 h-9 rounded-lg flex items-center justify-center transition-all relative"
                 style={{
                   background: active ? form.color + '22' : 'rgba(255,255,255,0.5)',
-                  border: active ? `2px solid ${form.color}` : '1px solid var(--glass-border)',
+                  border: active ? `2px solid ${form.color}` : '1px solid var(--gray-300)',
                 }}
                 title={iconName}
               >
-                <Icon size={16} style={{ color: active ? form.color : 'var(--ink-soft)' }} />
+                <Icon size={16} style={{ color: active ? form.color : 'var(--gray-500)' }} />
                 {active && (
                   <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: form.color }}>
                     <Check size={8} color="white" />
@@ -171,14 +171,14 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
             </button>
           ))}
           {/* Input cor customizada */}
-          <label className="w-7 h-7 rounded-full border-2 border-dashed border-[var(--glass-border)] flex items-center justify-center cursor-pointer hover:border-[var(--green-mid)] transition-colors overflow-hidden" title="Cor personalizada">
+          <label className="w-7 h-7 rounded-full border-2 border-dashed border-[var(--gray-300)] flex items-center justify-center cursor-pointer hover:border-[var(--gray-500)] transition-colors overflow-hidden" title="Cor personalizada">
             <input
               type="color"
               value={form.color}
               onChange={(e) => setForm(p => ({ ...p, color: e.target.value }))}
               className="opacity-0 absolute w-0 h-0"
             />
-            <span className="text-[10px] text-[var(--ink-ghost)]">+</span>
+            <span className="text-[10px] text-[var(--gray-500)]">+</span>
           </label>
         </div>
       </div>
@@ -189,7 +189,7 @@ export function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProp
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="flex-1 py-2.5 rounded-xl border border-[var(--glass-border)] text-sm font-medium text-[var(--ink-mid)] hover:bg-[var(--green-frost)] transition-colors"
+          className="flex-1 py-2.5 rounded-xl border border-[var(--gray-300)] text-sm font-medium text-[var(--gray-700)] hover:bg-[var(--gray-100)] transition-colors"
         >
           Cancelar
         </button>

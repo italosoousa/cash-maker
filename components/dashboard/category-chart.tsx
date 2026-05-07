@@ -36,12 +36,12 @@ function CustomTooltip({ active, payload }: {
   const item = payload[0].payload
 
   return (
-    <div className="glass-card px-3 py-2 text-xs shadow-[0_16px_40px_rgba(45,106,79,0.14)]">
-      <p className="font-semibold text-[var(--ink-dark)]">{item.name}</p>
+    <div className="glass-card px-3 py-2 text-xs shadow-[0_16px_40px_rgba(26,26,46,0.12)]">
+      <p className="font-semibold text-[var(--gray-900)]">{item.name}</p>
       <p className="font-[var(--font-mono)] font-bold mt-0.5" style={{ color: item.color }}>
         {formatBRL(item.total)}
       </p>
-      <p className="text-[var(--ink-ghost)]">{item.percentage}% do total</p>
+      <p className="text-[var(--gray-500)]">{item.percentage}% do total</p>
     </div>
   )
 }
@@ -51,12 +51,12 @@ export function CategoryChart({ data }: CategoryChartProps) {
     return (
       <div className="glass-card p-5 flex flex-col gap-4">
         <div>
-          <h3 className="text-sm font-semibold text-[var(--ink-dark)]">Despesas por Categoria</h3>
-          <p className="text-xs text-[var(--ink-ghost)] mt-0.5">No período selecionado</p>
+          <h3 className="text-sm font-semibold text-[var(--gray-900)]">Despesas por Categoria</h3>
+          <p className="text-xs text-[var(--gray-500)] mt-0.5">No período selecionado</p>
         </div>
         <div className="flex flex-col items-center justify-center py-10 gap-2">
-          <LucideIcons.PieChart size={32} className="text-[var(--ink-ghost)]" strokeWidth={1.5} />
-          <p className="text-xs text-[var(--ink-ghost)]">Nenhuma despesa no período</p>
+          <LucideIcons.PieChart size={32} className="text-[var(--gray-300)]" strokeWidth={1.5} />
+          <p className="text-xs text-[var(--gray-500)]">Nenhuma despesa no período</p>
         </div>
       </div>
     )
@@ -67,8 +67,8 @@ export function CategoryChart({ data }: CategoryChartProps) {
   return (
     <div className="glass-card p-5 flex flex-col gap-4">
       <div>
-        <h3 className="text-sm font-semibold text-[var(--ink-dark)]">Despesas por Categoria</h3>
-        <p className="text-xs text-[var(--ink-ghost)] mt-0.5">No período selecionado</p>
+        <h3 className="text-sm font-semibold text-[var(--gray-900)]">Despesas por Categoria</h3>
+        <p className="text-xs text-[var(--gray-500)] mt-0.5">No período selecionado</p>
       </div>
 
       <div className="flex flex-col xs:flex-row items-center gap-4">
@@ -108,12 +108,12 @@ export function CategoryChart({ data }: CategoryChartProps) {
                 >
                   <Icon size={12} style={{ color: item.color }} />
                 </div>
-                <span className="text-xs text-[var(--ink-mid)] truncate flex-1">{item.name}</span>
+                <span className="text-xs text-[var(--gray-700)] truncate flex-1">{item.name}</span>
                 <div className="text-right shrink-0">
-                  <p className="text-xs font-[var(--font-mono)] font-semibold text-[var(--ink-dark)]">
+                  <p className="text-xs font-[var(--font-mono)] font-semibold text-[var(--gray-900)]">
                     {formatBRL(item.total)}
                   </p>
-                  <p className="text-[10px] text-[var(--ink-ghost)]">{item.percentage}%</p>
+                  <p className="text-[10px] text-[var(--gray-500)]">{item.percentage}%</p>
                 </div>
               </li>
             )

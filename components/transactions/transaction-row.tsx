@@ -29,25 +29,25 @@ export function TransactionRow({ transaction, onEdit, onDelete }: TransactionRow
 
   return (
     <div className={`flex items-center gap-3 py-3 px-4 rounded-xl group transition-all
-      ${isDeleted ? 'opacity-45' : 'hover:bg-white/40'}`}>
+      ${isDeleted ? 'opacity-45' : 'hover:bg-[var(--gray-100)]'}`}>
 
       {/* Ícone da categoria */}
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
         style={category
           ? { background: category.color + '22', border: `1.5px solid ${category.color}` }
-          : { background: 'var(--green-frost)', border: '1.5px solid var(--glass-border)' }
+          : { background: 'var(--gray-100)', border: '1.5px solid var(--gray-300)' }
         }
       >
-        <Icon size={16} style={{ color: category?.color ?? 'var(--ink-soft)' }} />
+        <Icon size={16} style={{ color: category?.color ?? 'var(--gray-500)' }} />
       </div>
 
       {/* Descrição + categoria + data */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium truncate ${isDeleted ? 'line-through' : 'text-[var(--ink-dark)]'}`}>
+        <p className={`text-sm font-medium truncate ${isDeleted ? 'line-through text-[var(--gray-500)]' : 'text-[var(--gray-900)]'}`}>
           {description}
         </p>
-        <p className="text-xs text-[var(--ink-ghost)] mt-0.5 truncate">
+        <p className="text-xs text-[var(--gray-500)] mt-0.5 truncate">
           {category?.name} · {formatDate(date)}
         </p>
       </div>
@@ -55,14 +55,14 @@ export function TransactionRow({ transaction, onEdit, onDelete }: TransactionRow
       {/* Badges */}
       <div className="flex items-center gap-2 shrink-0">
         {isDeleted && (
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-[var(--status-err)]">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-[var(--status-expense)]">
             Excluída
           </span>
         )}
 
         {/* Valor */}
         <span className={`font-[var(--font-mono)] font-bold text-sm tabular-nums
-          ${isIncome ? 'text-[var(--status-ok)]' : 'text-[var(--status-err)]'}`}>
+          ${isIncome ? 'text-[var(--status-income)]' : 'text-[var(--status-expense)]'}`}>
           {formatAmount(Number(amount), type)}
         </span>
 
@@ -71,14 +71,14 @@ export function TransactionRow({ transaction, onEdit, onDelete }: TransactionRow
           <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ml-1">
             <button
               onClick={onEdit}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--ink-ghost)] hover:bg-[var(--green-frost)] hover:text-[var(--green-deep)] transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--gray-500)] hover:bg-[var(--gray-100)] hover:text-[var(--gray-900)] transition-colors"
               title="Editar"
             >
               <Pencil size={13} />
             </button>
             <button
               onClick={onDelete}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--ink-ghost)] hover:bg-red-50 hover:text-[var(--status-err)] transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--gray-500)] hover:bg-red-50 hover:text-[var(--status-expense)] transition-colors"
               title="Excluir"
             >
               <Trash2 size={13} />
@@ -87,7 +87,7 @@ export function TransactionRow({ transaction, onEdit, onDelete }: TransactionRow
         )}
 
         {isDeleted && (
-          <span title="Excluída (soft delete)"><RotateCcw size={13} className="text-[var(--ink-ghost)] ml-1" /></span>
+          <span title="Excluída (soft delete)"><RotateCcw size={13} className="text-[var(--gray-500)] ml-1" /></span>
         )}
       </div>
     </div>

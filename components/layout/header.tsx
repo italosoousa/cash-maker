@@ -26,18 +26,18 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
       {/* Título da página (mobile) / Search (desktop) */}
       <div className="flex-1 flex items-center gap-4 min-w-0">
         {pageTitle && (
-          <h1 className="text-base font-semibold text-[var(--ink-dark)] md:hidden truncate">
+          <h1 className="text-base font-semibold text-[var(--gray-900)] md:hidden truncate">
             {pageTitle}
           </h1>
         )}
 
         {/* Barra de busca — desktop */}
-        <div className="hidden md:flex flex-1 max-w-sm items-center gap-2 bg-white/70 border border-[var(--glass-border)] rounded-xl px-3 py-2 focus-within:border-[var(--green-mid)] focus-within:shadow-[0_0_0_3px_rgba(82,183,136,0.12)] transition-all shadow-sm">
-          <Search size={15} className="shrink-0 text-[var(--ink-ghost)]" />
+        <div className="hidden md:flex flex-1 max-w-sm items-center gap-2 bg-white/70 border border-[var(--gray-300)] rounded-xl px-3 py-2 focus-within:border-[var(--gray-500)] focus-within:shadow-[0_0_0_3px_rgba(136,136,170,0.12)] transition-all shadow-sm">
+          <Search size={15} className="shrink-0 text-[var(--gray-500)]" />
           <input
             type="search"
             placeholder="Buscar transações..."
-            className="flex-1 bg-transparent outline-none text-[var(--ink-dark)] placeholder:text-[var(--ink-ghost)] text-sm"
+            className="flex-1 bg-transparent outline-none text-[var(--gray-900)] placeholder:text-[var(--gray-500)] text-sm"
           />
         </div>
       </div>
@@ -45,27 +45,27 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
       {/* Ações */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Notificações */}
-        <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[var(--ink-soft)] bg-white/70 border border-[var(--glass-border)] shadow-sm hover:bg-white transition-colors">
+        <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[var(--gray-500)] bg-white/70 border border-[var(--gray-300)] shadow-sm hover:bg-white transition-colors">
           <Bell size={18} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--status-err)] rounded-full" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--status-expense)] rounded-full" />
         </button>
 
         {/* User menu */}
         <div className="relative">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-xl bg-white/70 border border-[var(--glass-border)] shadow-sm hover:bg-white transition-colors"
+            className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-xl bg-white/70 border border-[var(--gray-300)] shadow-sm hover:bg-white transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-[var(--green-mid)] text-white flex items-center justify-center text-xs font-bold">
+            <div className="w-8 h-8 rounded-full bg-[var(--gray-800)] text-white flex items-center justify-center text-xs font-bold">
               {initials}
             </div>
-            <span className="hidden md:block text-sm font-medium text-[var(--ink-dark)] max-w-[120px] truncate">
+            <span className="hidden md:block text-sm font-medium text-[var(--gray-900)] max-w-[120px] truncate">
               {userName.split(' ')[0]}
             </span>
             <ChevronDown
               size={14}
               className={cn(
-                'hidden md:block text-[var(--ink-ghost)] transition-transform',
+                'hidden md:block text-[var(--gray-500)] transition-transform',
                 menuOpen && 'rotate-180'
               )}
             />
@@ -79,17 +79,17 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
                 onClick={() => setMenuOpen(false)}
               />
               <div className="absolute right-0 top-full mt-2 w-52 glass-card p-2 z-20 animate-dialog">
-                <div className="px-3 py-2 border-b border-[var(--glass-border)] mb-1">
-                  <p className="text-sm font-semibold text-[var(--ink-dark)] truncate">{userName}</p>
-                  <p className="text-xs text-[var(--ink-ghost)] truncate">{userEmail}</p>
+                <div className="px-3 py-2 border-b border-[var(--gray-300)] mb-1">
+                  <p className="text-sm font-semibold text-[var(--gray-900)] truncate">{userName}</p>
+                  <p className="text-xs text-[var(--gray-500)] truncate">{userEmail}</p>
                 </div>
-                <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--ink-mid)] hover:bg-[var(--green-frost)] rounded-lg transition-colors">
+                <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] rounded-lg transition-colors">
                   <User size={14} />
                   Meu perfil
                 </button>
                 <button
                   onClick={() => signOut({ callbackUrl: '/login' })}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--status-err)] hover:bg-red-50 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--status-expense)] hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <LogOut size={14} />
                   Sair

@@ -104,10 +104,10 @@ export default function TransactionsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
+          <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
             Transações
           </h1>
-          <p className="text-sm text-[var(--ink-soft)] mt-0.5">
+          <p className="text-sm text-[var(--gray-500)] mt-0.5">
             {data ? `${data.total} transação${data.total !== 1 ? 'ões' : ''}` : '...'}
           </p>
         </div>
@@ -116,12 +116,12 @@ export default function TransactionsPage() {
             onClick={() => setShowFilters(v => !v)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium border transition-colors
               ${showFilters || hasFilters
-                ? 'bg-[var(--green-frost)] border-[var(--green-mid)] text-[var(--green-deep)]'
-                : 'border-[var(--glass-border)] text-[var(--ink-soft)] hover:bg-[var(--green-frost)]'}`}
+                ? 'bg-[var(--gray-100)] border-[var(--gray-500)] text-[var(--gray-900)]'
+                : 'border-[var(--gray-300)] text-[var(--gray-500)] hover:bg-[var(--gray-100)]'}`}
           >
             <Filter size={15} />
             <span className="hidden xs:inline">Filtros</span>
-            {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-[var(--green-mid)]" />}
+            {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-[var(--gray-700)]" />}
           </button>
           <button onClick={openCreate} className="auth-btn px-4 py-2 text-sm gap-1.5">
             <Plus size={16} />
@@ -133,16 +133,16 @@ export default function TransactionsPage() {
       {/* Cards de resumo */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
         {[
-          { label: 'Receitas',  value: totalIncome,           icon: TrendingUp,   color: 'var(--status-ok)' },
-          { label: 'Despesas',  value: totalExpense,          icon: TrendingDown, color: 'var(--status-err)' },
-          { label: 'Resultado', value: totalIncome - totalExpense, icon: Wallet, color: totalIncome >= totalExpense ? 'var(--status-ok)' : 'var(--status-err)' },
+          { label: 'Receitas',  value: totalIncome,           icon: TrendingUp,   color: 'var(--status-income)' },
+          { label: 'Despesas',  value: totalExpense,          icon: TrendingDown, color: 'var(--status-expense)' },
+          { label: 'Resultado', value: totalIncome - totalExpense, icon: Wallet, color: totalIncome >= totalExpense ? 'var(--status-income)' : 'var(--status-expense)' },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="glass-card px-3 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '22' }}>
               <Icon size={16} style={{ color }} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] sm:text-xs font-medium text-[var(--ink-ghost)]">{label}</p>
+              <p className="text-[10px] sm:text-xs font-medium text-[var(--gray-500)]">{label}</p>
               <p className="font-[var(--font-mono)] font-bold text-sm sm:text-base truncate" style={{ color }}>
                 {formatCurrency(value)}
               </p>
@@ -165,8 +165,8 @@ export default function TransactionsPage() {
                   onClick={() => { setType(opt.value); setPage(1) }}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors
                     ${type === opt.value
-                      ? 'bg-[var(--green-mid)] text-white'
-                      : 'bg-white/50 text-[var(--ink-soft)] hover:bg-[var(--green-frost)]'}`}
+                      ? 'bg-[var(--gray-900)] text-white'
+                      : 'bg-[var(--gray-100)] text-[var(--gray-500)] hover:bg-[var(--gray-200)]'}`}
                 >
                   {opt.label}
                 </button>
@@ -205,7 +205,7 @@ export default function TransactionsPage() {
 
           {hasFilters && (
             <button onClick={clearFilters}
-              className="col-span-full text-xs text-[var(--status-err)] hover:underline text-left">
+              className="col-span-full text-xs text-[var(--status-expense)] hover:underline text-left">
               Limpar filtros
             </button>
           )}
@@ -215,7 +215,7 @@ export default function TransactionsPage() {
       {/* Lista */}
       <div className="glass-card overflow-hidden">
         {loading ? (
-          <div className="divide-y divide-[var(--glass-border)]">
+          <div className="divide-y divide-[var(--gray-300)]">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 py-3 px-4">
                 <div className="skeleton w-9 h-9 rounded-xl" />
@@ -228,15 +228,15 @@ export default function TransactionsPage() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="py-16 flex flex-col items-center gap-3 text-[var(--ink-ghost)]">
+          <div className="py-16 flex flex-col items-center gap-3 text-[var(--gray-500)]">
             <Wallet size={32} className="opacity-40" />
             <p className="text-sm">Nenhuma transação encontrada</p>
-            <button onClick={openCreate} className="text-xs text-[var(--green-mid)] hover:underline">
+            <button onClick={openCreate} className="text-xs text-[var(--gray-700)] hover:underline">
               Criar primeira transação
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-[var(--glass-border)]">
+          <div className="divide-y divide-[var(--gray-300)]">
             {items.map(tx => (
               <TransactionRow
                 key={tx.id}
@@ -250,22 +250,22 @@ export default function TransactionsPage() {
 
         {/* Paginação */}
         {data && data.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--glass-border)]">
-            <p className="text-xs text-[var(--ink-ghost)]">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--gray-300)]">
+            <p className="text-xs text-[var(--gray-500)]">
               Página {data.page} de {data.totalPages} · {data.total} itens
             </p>
             <div className="flex gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--ink-soft)] hover:bg-[var(--green-frost)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--gray-500)] hover:bg-[var(--gray-100)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
                 disabled={page >= data.totalPages}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--ink-soft)] hover:bg-[var(--green-frost)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--gray-500)] hover:bg-[var(--gray-100)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={16} />
               </button>
@@ -286,18 +286,18 @@ export default function TransactionsPage() {
       <AlertDialog open={!!deleting} onOpenChange={o => !o && setDeleting(null)}>
         <AlertDialogContent className="glass-card border-0">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[var(--ink-dark)]">Excluir transação?</AlertDialogTitle>
-            <AlertDialogDescription className="text-[var(--ink-soft)]">
+            <AlertDialogTitle className="text-[var(--gray-900)]">Excluir transação?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[var(--gray-500)]">
               <strong>{deleting?.description}</strong> será marcada como excluída.
               Você pode ver o histórico em relatórios.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-[var(--glass-border)]">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="border-[var(--gray-300)]">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleteLoading}
-              className="bg-[var(--status-err)] hover:bg-red-600 text-white"
+              className="bg-[var(--status-expense)] hover:bg-red-600 text-white"
             >
               Excluir
             </AlertDialogAction>
@@ -308,7 +308,7 @@ export default function TransactionsPage() {
       {/* FAB mobile */}
       <button
         onClick={openCreate}
-        className="fixed bottom-20 right-4 md:hidden w-14 h-14 rounded-full bg-[var(--green-mid)] text-white shadow-lg shadow-green-500/30 flex items-center justify-center hover:bg-[var(--green-deep)] transition-colors z-30"
+        className="fixed bottom-20 right-4 md:hidden w-14 h-14 rounded-full bg-[var(--gray-900)] text-white shadow-lg shadow-black/20 flex items-center justify-center hover:bg-[var(--gray-800)] transition-colors z-30"
       >
         <Plus size={24} />
       </button>

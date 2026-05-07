@@ -12,15 +12,24 @@ interface SummaryCardProps {
 }
 
 export function SummaryCard({ label, value, type, icon: Icon, variation, loading }: SummaryCardProps) {
-  const iconColor = type === 'income' ? 'var(--status-ok)'
-    : type === 'expense' ? 'var(--status-err)'
-    : value < 0 ? 'var(--status-err)' : 'var(--status-ok)'
-
   const isNeg = typeof variation === 'number' && variation < 0
 
+  const cardClass =
+    type === 'income'  ? 'glass-card-income' :
+    type === 'expense' ? 'glass-card-expense' :
+    'glass-card'
+
+  const iconColor =
+    type === 'income'  ? 'var(--status-income)'  :
+    type === 'expense' ? 'var(--status-expense)' :
+    value < 0          ? 'var(--status-expense)' : 'var(--status-income)'
+
   return (
-    <div className="glass-card p-5 flex flex-col gap-3 hover:shadow-[0_16px_40px_rgba(45,106,79,0.14)] transition-all duration-200">
-      {/* Ícone + label */}
+    <div className={cn(
+      cardClass,
+      'p-5 flex flex-col gap-3 transition-all duration-200 hover:shadow-[0_16px_40px_rgba(26,26,46,0.12)]'
+    )}>
+      {/* Ícone + variação */}
       <div className="flex items-center justify-between">
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -32,8 +41,8 @@ export function SummaryCard({ label, value, type, icon: Icon, variation, loading
           <span className={cn(
             'flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full',
             isNeg
-              ? 'bg-red-50 text-[var(--status-err)]'
-              : 'bg-[var(--green-frost)] text-[var(--status-ok)]'
+              ? 'bg-[rgba(244,230,226,0.8)] text-[var(--status-expense)]'
+              : 'bg-[var(--green-frost)] text-[var(--status-income)]'
           )}>
             {isNeg ? <TrendingDown size={11} /> : <TrendingUp size={11} />}
             {Math.abs(variation)}%
@@ -54,7 +63,7 @@ export function SummaryCard({ label, value, type, icon: Icon, variation, loading
             type={type === 'neutral' ? (value < 0 ? 'expense' : 'income') : type}
             size="lg"
           />
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--ink-ghost)]">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gray-500)]">
             {label}
           </p>
         </>

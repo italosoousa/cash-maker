@@ -29,7 +29,7 @@ export function BottomNav() {
       {/* Botão central + */}
       <Link
         href="/transactions?new=1"
-        className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-[var(--green-mid)] text-white shadow-lg shadow-green-500/30 -mt-5 hover:bg-[var(--green-deep)] transition-colors"
+        className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-[var(--gray-900)] text-white shadow-lg shadow-black/20 -mt-5 hover:bg-[var(--gray-800)] transition-colors"
       >
         <Plus size={22} />
       </Link>

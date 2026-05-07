@@ -122,17 +122,17 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md glass-card border-l border-[var(--glass-border)] overflow-y-auto"
+        className="w-full sm:max-w-md glass-card border-l border-[var(--gray-300)] overflow-y-auto"
       >
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
+          <SheetTitle className="text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
             {isEdit ? 'Editar transação' : 'Nova transação'}
           </SheetTitle>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           {/* Toggle Receita / Despesa */}
-          <div className="flex rounded-xl overflow-hidden border border-[var(--glass-border)]">
+          <div className="flex rounded-xl overflow-hidden border border-[var(--gray-300)]">
             {(['EXPENSE', 'INCOME'] as const).map((t) => (
               <button
                 key={t}
@@ -142,9 +142,9 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
                   'flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all',
                   form.type === t
                     ? t === 'INCOME'
-                      ? 'bg-[var(--status-ok)] text-white'
-                      : 'bg-[var(--status-err)] text-white'
-                    : 'bg-white/40 text-[var(--ink-soft)] hover:bg-white/60'
+                      ? 'bg-[var(--status-income)] text-white'
+                      : 'bg-[var(--status-expense)] text-white'
+                    : 'bg-[var(--gray-100)] text-[var(--gray-500)] hover:bg-[var(--gray-200)]'
                 )}
               >
                 {t === 'INCOME'
@@ -158,7 +158,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
           <div className="space-y-1.5">
             <label className="auth-label">Valor (R$)</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-[var(--ink-ghost)]">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-[var(--gray-500)]">
                 R$
               </span>
               <input
@@ -171,12 +171,12 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
                 placeholder="0,00"
                 className={cn(
                   'auth-input pl-9 font-[var(--font-mono)] text-lg font-bold',
-                  isIncome ? 'text-[var(--status-ok)]' : 'text-[var(--status-err)]'
+                  isIncome ? 'text-[var(--status-income)]' : 'text-[var(--status-expense)]'
                 )}
                 disabled={loading}
               />
             </div>
-            {errors.amount && <p className="text-xs text-[var(--status-err)]">{errors.amount}</p>}
+            {errors.amount && <p className="text-xs text-[var(--status-expense)]">{errors.amount}</p>}
           </div>
 
           {/* Descrição */}
@@ -191,7 +191,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
               disabled={loading}
               maxLength={200}
             />
-            {errors.description && <p className="text-xs text-[var(--status-err)]">{errors.description}</p>}
+            {errors.description && <p className="text-xs text-[var(--status-expense)]">{errors.description}</p>}
           </div>
 
           {/* Data + Categoria lado a lado */}
@@ -205,7 +205,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
                 className="auth-input"
                 disabled={loading}
               />
-              {errors.date && <p className="text-xs text-[var(--status-err)]">{errors.date}</p>}
+              {errors.date && <p className="text-xs text-[var(--status-expense)]">{errors.date}</p>}
             </div>
 
             <div className="space-y-1.5">
@@ -221,7 +221,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
-              {errors.categoryId && <p className="text-xs text-[var(--status-err)]">{errors.categoryId}</p>}
+              {errors.categoryId && <p className="text-xs text-[var(--status-expense)]">{errors.categoryId}</p>}
             </div>
           </div>
 
@@ -231,11 +231,11 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
             if (!cat) return null
             const Icon = getLucideIcon(cat.icon)
             return (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/40 border border-[var(--glass-border)]">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/60 border border-[var(--gray-300)]">
                 <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: cat.color + '22' }}>
                   <Icon size={13} style={{ color: cat.color }} />
                 </div>
-                <span className="text-xs text-[var(--ink-mid)]">{cat.name}</span>
+                <span className="text-xs text-[var(--gray-700)]">{cat.name}</span>
               </div>
             )
           })()}

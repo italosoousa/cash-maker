@@ -46,8 +46,8 @@ export default function RootLayout({
             style: {
               background: 'var(--glass-bg)',
               backdropFilter: 'var(--glass-blur)',
-              border: '1px solid var(--glass-border)',
-              color: 'var(--ink-dark)',
+              border: '1px solid var(--gray-300)',
+              color: 'var(--gray-900)',
             },
           }}
         />

@@ -106,10 +106,10 @@ export default function RegisterPage() {
 
         <div className="glass-card p-8">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-[var(--green-deep)] font-[var(--font-space-grotesk)]">
+            <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
               Criar conta
             </h1>
-            <p className="text-sm text-[var(--ink-soft)] mt-1">
+            <p className="text-sm text-[var(--gray-500)] mt-1">
               Gratuito para sempre. Sem cartão de crédito.
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function RegisterPage() {
                 className="auth-input"
                 {...field('name')}
               />
-              {errors.name && <p className="text-xs text-[var(--status-err)]">{errors.name}</p>}
+              {errors.name && <p className="text-xs text-[var(--status-expense)]">{errors.name}</p>}
             </div>
 
             {/* E-mail */}
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                 className="auth-input"
                 {...field('email')}
               />
-              {errors.email && <p className="text-xs text-[var(--status-err)]">{errors.email}</p>}
+              {errors.email && <p className="text-xs text-[var(--status-expense)]">{errors.email}</p>}
             </div>
 
             {/* Senha */}
@@ -158,7 +158,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-ghost)] hover:text-[var(--ink-soft)] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--gray-500)] hover:text-[var(--gray-500)] transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -173,12 +173,12 @@ export default function RegisterPage() {
                     return (
                       <div key={rule.label} className="flex items-center gap-1.5">
                         {ok ? (
-                          <Check size={12} className="text-[var(--status-ok)]" />
+                          <Check size={12} className="text-[var(--status-income)]" />
                         ) : (
-                          <X size={12} className="text-[var(--status-err)]" />
+                          <X size={12} className="text-[var(--status-expense)]" />
                         )}
                         <span
-                          className={`text-xs ${ok ? 'text-[var(--status-ok)]' : 'text-[var(--ink-ghost)]'}`}
+                          className={`text-xs ${ok ? 'text-[var(--status-income)]' : 'text-[var(--gray-500)]'}`}
                         >
                           {rule.label}
                         </span>
@@ -189,7 +189,7 @@ export default function RegisterPage() {
               )}
 
               {errors.password && (
-                <p className="text-xs text-[var(--status-err)]">{errors.password}</p>
+                <p className="text-xs text-[var(--status-expense)]">{errors.password}</p>
               )}
             </div>
 
@@ -210,14 +210,14 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--ink-ghost)] hover:text-[var(--ink-soft)] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--gray-500)] hover:text-[var(--gray-500)] transition-colors"
                   tabIndex={-1}
                 >
                   {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-xs text-[var(--status-err)]">{errors.confirmPassword}</p>
+                <p className="text-xs text-[var(--status-expense)]">{errors.confirmPassword}</p>
               )}
             </div>
 
@@ -237,18 +237,18 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-[var(--ink-soft)] mt-6">
+          <p className="text-center text-sm text-[var(--gray-500)] mt-6">
             Já tem conta?{' '}
             <Link
               href="/login"
-              className="text-[var(--green-mid)] font-medium hover:text-[var(--green-deep)] transition-colors"
+              className="text-[var(--gray-700)] font-medium hover:text-[var(--gray-900)] transition-colors"
             >
               Entrar
             </Link>
           </p>
         </div>
 
-        <p className="text-center text-xs text-[var(--ink-ghost)] mt-6">
+        <p className="text-center text-xs text-[var(--gray-500)] mt-6">
           Cash Maker · Organize. Controle. Cresça.
         </p>
       </div>

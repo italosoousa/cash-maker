@@ -7,52 +7,69 @@
 
 /* Expõe as CSS variables como tokens Tailwind v4 para uso como classes */
 @theme inline {
-  --color-green-deep:   var(--green-deep);
-  --color-green-mid:    var(--green-mid);
-  --color-green-soft:   var(--green-soft);
-  --color-green-mist:   var(--green-mist);
-  --color-green-frost:  var(--green-frost);
-  --color-green-air:    var(--green-air);
-  --color-ink-dark:     var(--ink-dark);
-  --color-ink-mid:      var(--ink-mid);
-  --color-ink-soft:     var(--ink-soft);
-  --color-ink-ghost:    var(--ink-ghost);
-  --color-status-ok:    var(--status-ok);
-  --color-status-err:   var(--status-err);
-  --color-status-warn:  var(--status-warn);
-  --color-status-info:  var(--status-info);
-  --font-sans:          var(--font-inter), system-ui, sans-serif;
-  --font-display:       var(--font-space-grotesk), system-ui, sans-serif;
-  --font-mono:          var(--font-mono), ui-monospace, monospace;
+  /* Gray scale */
+  --color-gray-900:  var(--gray-900);
+  --color-gray-800:  var(--gray-800);
+  --color-gray-700:  var(--gray-700);
+  --color-gray-500:  var(--gray-500);
+  --color-gray-300:  var(--gray-300);
+  --color-gray-200:  var(--gray-200);
+  --color-gray-100:  var(--gray-100);
+  --color-gray-50:   var(--gray-50);
+
+  /* Green (functional — restricted use) */
+  --color-green-brand:   var(--green-brand);
+  --color-green-income:  var(--green-income);
+  --color-green-soft:    var(--green-soft);
+  --color-green-frost:   var(--green-frost);
+
+  /* Status */
+  --color-status-income:  var(--status-income);
+  --color-status-expense: var(--status-expense);
+  --color-status-warn:    var(--status-warn);
+  --color-status-info:    var(--status-info);
+
+  /* Legacy aliases (keep for backward-compat while migrating) */
+  --color-status-ok:   var(--status-income);
+  --color-status-err:  var(--status-expense);
+
+  --font-sans:     var(--font-inter), system-ui, sans-serif;
+  --font-display:  var(--font-space-grotesk), system-ui, sans-serif;
+  --font-mono:     var(--font-mono), ui-monospace, monospace;
 }
 
 :root {
-  /* Verdes da marca */
-  --green-deep:   #2D6A4F;
-  --green-mid:    #52B788;
-  --green-soft:   #74C69D;
-  --green-mist:   #B7E4C7;
-  --green-frost:  #D8F3DC;
-  --green-air:    #F0FAF4;
+  /* === BASE NEUTRA === */
+  --gray-900:  #1A1A2E;
+  --gray-800:  #2D2D44;
+  --gray-700:  #4A4A6A;
+  --gray-500:  #8888AA;
+  --gray-300:  #C8C8E0;
+  --gray-200:  #E8E8F4;
+  --gray-100:  #F4F4FA;
+  --gray-50:   #FAFAFE;
 
-  /* Texto */
-  --ink-dark:     #1B3A2D;
-  --ink-mid:      #3D6B55;
-  --ink-soft:     #6B9E82;
-  --ink-ghost:    #9DC4AD;
+  /* === VERDE FUNCIONAL (uso restrito) === */
+  --green-brand:   #2D6A4F;   /* logo/marca apenas */
+  --green-income:  #52B788;   /* receitas, positivo */
+  --green-soft:    #74C69D;   /* badges receita */
+  --green-frost:   #D8F3DC;   /* fundo cards receita */
 
-  /* Glass */
-  --glass-silver: #EEF2F0;
-  --glass-bg:     rgba(240, 250, 244, 0.72);
-  --glass-blur:   blur(20px) saturate(1.8);
-  --glass-border: rgba(183, 228, 199, 0.6);
-  --glass-shadow: 0 8px 32px rgba(45, 106, 79, 0.10);
+  /* === STATUS === */
+  --status-income:  #52B788;
+  --status-expense: #E07A5F;
+  --status-warn:    #F2CC8F;
+  --status-info:    #7B9FC7;
 
-  /* Status */
-  --status-ok:    #52B788;
-  --status-err:   #E07A5F;
-  --status-warn:  #F2CC8F;
-  --status-info:  #81B29A;
+  /* Legacy aliases */
+  --status-ok:  #52B788;
+  --status-err: #E07A5F;
+
+  /* === GLASS NEUTRO === */
+  --glass-bg:     rgba(244, 244, 250, 0.75);
+  --glass-blur:   blur(20px) saturate(1.4);
+  --glass-border: rgba(200, 200, 224, 0.6);
+  --glass-shadow: 0 8px 32px rgba(26, 26, 46, 0.08);
 
   /* Fontes */
   --font-space-grotesk: var(--font-space-grotesk);
@@ -60,62 +77,64 @@
   --font-mono: var(--font-mono);
 
   /* shadcn/ui tokens mapeados para o tema Cash Maker */
-  --background: 240 250 244;
-  --foreground: 27 58 45;
-  --card: 240 250 244;
-  --card-foreground: 27 58 45;
-  --popover: 240 250 244;
-  --popover-foreground: 27 58 45;
-  --primary: 82 183 136;
+  --background: 250 250 254;
+  --foreground: 26 26 46;
+  --card: 244 244 250;
+  --card-foreground: 26 26 46;
+  --popover: 244 244 250;
+  --popover-foreground: 26 26 46;
+  --primary: 26 26 46;
   --primary-foreground: 255 255 255;
-  --secondary: 216 243 220;
-  --secondary-foreground: 27 58 45;
-  --muted: 238 242 240;
-  --muted-foreground: 107 158 130;
-  --accent: 183 228 199;
-  --accent-foreground: 27 58 45;
+  --secondary: 232 232 244;
+  --secondary-foreground: 26 26 46;
+  --muted: 232 232 244;
+  --muted-foreground: 136 136 170;
+  --accent: 232 232 244;
+  --accent-foreground: 26 26 46;
   --destructive: 224 122 95;
   --destructive-foreground: 255 255 255;
-  --border: 183 228 199;
-  --input: 183 228 199;
-  --ring: 82 183 136;
+  --border: 200 200 224;
+  --input: 200 200 224;
+  --ring: 26 26 46;
   --radius: 0.75rem;
-  --sidebar:   240 250 244;
-  --sidebar-foreground:   27 58 45;
-  --sidebar-primary:   82 183 136;
-  --sidebar-primary-foreground:   255 255 255;
-  --sidebar-accent:   216 243 220;
-  --sidebar-accent-foreground:   27 58 45;
-  --sidebar-border:   183 228 199;
-  --sidebar-ring:   82 183 136;
+  --sidebar: 250 250 254;
+  --sidebar-foreground: 26 26 46;
+  --sidebar-primary: 26 26 46;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent: 232 232 244;
+  --sidebar-accent-foreground: 26 26 46;
+  --sidebar-border: 200 200 224;
+  --sidebar-ring: 26 26 46;
 }
 
 [data-theme="dark"] {
-  --background: 13 31 23;
-  --foreground: 216 243 220;
-  --card: 30 60 45;
-  --card-foreground: 216 243 220;
-  --popover: 30 60 45;
-  --popover-foreground: 216 243 220;
-  --primary: 82 183 136;
-  --primary-foreground: 13 31 23;
-  --secondary: 45 106 79;
-  --secondary-foreground: 216 243 220;
-  --muted: 30 60 45;
-  --muted-foreground: 116 198 157;
-  --accent: 45 106 79;
-  --accent-foreground: 216 243 220;
+  --gray-50:   #0F0F1A;
+  --gray-100:  #1A1A2E;
+  --gray-200:  #2D2D44;
+  --gray-900:  #F4F4FA;
+  --glass-bg:     rgba(26, 26, 46, 0.80);
+  --glass-border: rgba(100, 100, 160, 0.3);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+
+  --background: 15 15 26;
+  --foreground: 244 244 250;
+  --card: 26 26 46;
+  --card-foreground: 244 244 250;
+  --popover: 26 26 46;
+  --popover-foreground: 244 244 250;
+  --primary: 244 244 250;
+  --primary-foreground: 15 15 26;
+  --secondary: 45 45 68;
+  --secondary-foreground: 244 244 250;
+  --muted: 45 45 68;
+  --muted-foreground: 136 136 170;
+  --accent: 45 45 68;
+  --accent-foreground: 244 244 250;
   --destructive: 224 122 95;
   --destructive-foreground: 255 255 255;
-  --border: 82 183 136 / 25%;
-  --input: 82 183 136 / 25%;
-  --ring: 82 183 136;
-
-  --green-deep:   #74C69D;
-  --ink-dark:     #D8F3DC;
-  --ink-mid:      #74C69D;
-  --glass-bg:     rgba(30, 60, 45, 0.70);
-  --glass-border: rgba(82, 183, 136, 0.25);
+  --border: 100 100 160 / 30%;
+  --input: 100 100 160 / 30%;
+  --ring: 244 244 250;
 }
 
 * {
@@ -123,8 +142,8 @@
 }
 
 body {
-  background-color: var(--green-air);
-  color: var(--ink-dark);
+  background-color: var(--gray-50);
+  color: var(--gray-900);
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
@@ -132,14 +151,36 @@ body {
    GLASS CARD — componente visual principal do Cash Maker
    ============================================================ */
 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: rgba(244, 244, 250, 0.75);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(200, 200, 224, 0.6);
   border-radius: 20px;
   box-shadow:
-    var(--glass-shadow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 8px 32px rgba(26, 26, 46, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Card de receita — toque verde sutil */
+.glass-card-income {
+  background: rgba(216, 243, 220, 0.60);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(82, 183, 136, 0.4);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(45, 106, 79, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Card de despesa — toque terracota sutil */
+.glass-card-expense {
+  background: rgba(244, 230, 226, 0.60);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(224, 122, 95, 0.4);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(224, 122, 95, 0.06),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* Lift only on devices that support hover (not touch) */
@@ -147,18 +188,18 @@ body {
   .glass-card:hover {
     transform: translateY(-3px);
     box-shadow:
-      0 16px 40px rgba(45, 106, 79, 0.14),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      0 16px 40px rgba(26, 26, 46, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
     transition: transform 200ms ease, box-shadow 200ms ease;
   }
 }
 
 /* Sidebar glass */
 .glass-sidebar {
-  background: rgba(240, 250, 244, 0.85);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  border-right: 1px solid var(--glass-border);
+  background: rgba(250, 250, 254, 0.90);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-right: 1px solid rgba(200, 200, 224, 0.6);
 }
 
 /* Transições globais */
@@ -189,7 +230,7 @@ html {
 
 .skeleton {
   animation: skeleton-pulse 1.5s ease-in-out infinite;
-  background: var(--green-frost);
+  background: var(--gray-200);
   border-radius: 8px;
 }
 
@@ -211,9 +252,9 @@ html {
 .auth-bg {
   background: linear-gradient(
     135deg,
-    var(--green-air) 0%,
-    var(--green-frost) 40%,
-    rgba(183, 228, 199, 0.4) 100%
+    var(--gray-50) 0%,
+    var(--gray-100) 40%,
+    rgba(200, 200, 224, 0.3) 100%
   );
   position: relative;
   overflow: hidden;
@@ -229,7 +270,7 @@ html {
 .auth-orb-1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(82, 183, 136, 0.25) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(136, 136, 170, 0.15) 0%, transparent 70%);
   top: -150px;
   right: -100px;
 }
@@ -237,7 +278,7 @@ html {
 .auth-orb-2 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(116, 198, 157, 0.20) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(200, 200, 224, 0.20) 0%, transparent 70%);
   bottom: -120px;
   left: -80px;
 }
@@ -245,26 +286,26 @@ html {
 /* Input estilo glass */
 .auth-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--gray-300);
   border-radius: 10px;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
   font-family: var(--font-inter), sans-serif;
-  color: var(--ink-dark);
+  color: var(--gray-900);
   outline: none;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .auth-input::placeholder {
-  color: var(--ink-ghost);
+  color: var(--gray-500);
 }
 
 .auth-input:focus {
-  border-color: var(--green-mid);
-  box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.15);
+  border-color: var(--gray-500);
+  box-shadow: 0 0 0 3px rgba(136, 136, 170, 0.15);
 }
 
 .auth-input:disabled {
@@ -278,7 +319,7 @@ html {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ink-soft);
+  color: var(--gray-500);
 }
 
 /* Botão primário auth */
@@ -287,7 +328,7 @@ html {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: var(--green-mid);
+  background: var(--gray-900);
   color: #fff;
   font-weight: 600;
   font-size: 0.9375rem;
@@ -296,13 +337,13 @@ html {
   padding: 0.75rem 1.5rem;
   cursor: pointer;
   transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
-  box-shadow: 0 4px 14px rgba(82, 183, 136, 0.35);
+  box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
 }
 
 .auth-btn:hover:not(:disabled) {
-  background: var(--green-deep);
+  background: var(--gray-800);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(45, 106, 79, 0.35);
+  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.30);
 }
 
 .auth-btn:active:not(:disabled) {
@@ -323,9 +364,9 @@ html {
   min-height: 100vh;
   background: linear-gradient(
     160deg,
-    var(--green-air) 0%,
-    rgba(216, 243, 220, 0.5) 50%,
-    var(--green-air) 100%
+    var(--gray-50) 0%,
+    rgba(232, 232, 244, 0.4) 50%,
+    var(--gray-50) 100%
   );
   position: relative;
 }
@@ -356,20 +397,22 @@ html {
   gap: 10px;
   padding: 0.5rem 0.625rem;
   border-radius: 10px;
-  color: var(--ink-mid);
+  color: var(--gray-500);
   transition: background 150ms ease, color 150ms ease;
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--green-deep);
+  background: var(--gray-100);
+  color: var(--gray-700);
 }
 
 .nav-item-active {
   background: white;
-  color: var(--green-deep);
+  color: var(--gray-900);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.10);
+  border-left: 3px solid var(--gray-700);
+  padding-left: calc(0.625rem - 3px);
+  box-shadow: 0 2px 8px rgba(26, 26, 46, 0.08);
 }
 
 /* Área principal */
@@ -444,11 +487,11 @@ html {
     padding: 0.5rem 0.75rem;
     /* Respeita notch/home-indicator no iOS */
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-    background: rgba(240, 250, 244, 0.95);
-    backdrop-filter: blur(20px) saturate(1.8);
-    -webkit-backdrop-filter: blur(20px) saturate(1.8);
-    border-top: 1px solid var(--glass-border);
-    box-shadow: 0 -4px 24px rgba(45, 106, 79, 0.08);
+    background: rgba(250, 250, 254, 0.95);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border-top: 1px solid rgba(200, 200, 224, 0.6);
+    box-shadow: 0 -4px 24px rgba(26, 26, 46, 0.06);
   }
 }
 
@@ -465,28 +508,28 @@ html {
   gap: 2px;
   padding: 0.375rem 0.75rem;
   border-radius: 10px;
-  color: var(--ink-ghost);
+  color: var(--gray-500);
   transition: color 150ms ease, background 150ms ease;
 }
 
 .bottom-nav-item:hover {
-  color: var(--green-mid);
+  color: var(--gray-700);
 }
 
 .bottom-nav-item-active {
-  color: var(--green-deep);
+  color: var(--gray-900);
   font-weight: 600;
 }
 
 .dark {
-  --sidebar:   13 31 23;
-  --sidebar-foreground:   216 243 220;
-  --sidebar-primary:   82 183 136;
-  --sidebar-primary-foreground:   13 31 23;
-  --sidebar-accent:   45 106 79;
-  --sidebar-accent-foreground:   216 243 220;
-  --sidebar-border:   82 183 136 / 25%;
-  --sidebar-ring:   82 183 136;
+  --sidebar: 15 15 26;
+  --sidebar-foreground: 244 244 250;
+  --sidebar-primary: 244 244 250;
+  --sidebar-primary-foreground: 15 15 26;
+  --sidebar-accent: 45 45 68;
+  --sidebar-accent-foreground: 244 244 250;
+  --sidebar-border: 100 100 160 / 30%;
+  --sidebar-ring: 244 244 250;
 }
 
 @theme inline {

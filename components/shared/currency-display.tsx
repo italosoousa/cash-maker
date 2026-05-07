@@ -17,9 +17,9 @@ const SIZE_MAP = {
 }
 
 const COLOR_MAP = {
-  income:  'text-[var(--status-ok)]',
-  expense: 'text-[var(--status-err)]',
-  neutral: 'text-[var(--ink-dark)]',
+  income:  'text-[var(--status-income)]',
+  expense: 'text-[var(--status-expense)]',
+  neutral: 'text-[var(--gray-900)]',
 }
 
 export function CurrencyDisplay({
