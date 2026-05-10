@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { signOut } from 'next-auth/react'
 import { Search, Bell, LogOut, User, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -83,10 +84,14 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
                   <p className="text-sm font-semibold text-[var(--gray-900)] truncate">{userName}</p>
                   <p className="text-xs text-[var(--gray-500)] truncate">{userEmail}</p>
                 </div>
-                <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] rounded-lg transition-colors">
+                <Link
+                  href="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] rounded-lg transition-colors"
+                >
                   <User size={14} />
                   Meu perfil
-                </button>
+                </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: '/login' })}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--status-expense)] hover:bg-red-50 rounded-lg transition-colors"

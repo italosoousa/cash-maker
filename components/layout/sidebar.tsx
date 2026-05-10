@@ -98,14 +98,16 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
 
       {/* Usuário + logout */}
       <div className="px-3 pb-5 pt-3">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/60 border border-[var(--gray-300)] hover:bg-white transition-colors group shadow-sm">
-          <div className="w-8 h-8 rounded-full bg-[var(--gray-800)] text-white flex items-center justify-center text-xs font-bold shrink-0">
-            {initials}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[var(--gray-900)] truncate">{userName}</p>
-            <p className="text-xs text-[var(--gray-500)] truncate">{userEmail}</p>
-          </div>
+        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/60 border border-[var(--gray-300)] shadow-sm">
+          <Link href="/profile" className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 rounded-full bg-[var(--gray-800)] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[var(--gray-900)] truncate">{userName}</p>
+              <p className="text-xs text-[var(--gray-500)] truncate">{userEmail}</p>
+            </div>
+          </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="text-[var(--gray-500)] hover:text-[var(--status-expense)] transition-colors p-1 rounded-lg"
