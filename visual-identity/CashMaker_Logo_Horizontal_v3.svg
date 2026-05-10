@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="160" viewBox="0 0 600 160">
+  <defs>
+    <style>
+      .wordmark { font-family: Arial, sans-serif; font-size: 36px; font-weight: 700; fill: #1A1A2E; letter-spacing: -0.5px; }
+      .tagline  { font-family: Arial, sans-serif; font-size: 11px; font-weight: 400; fill: #8888AA; letter-spacing: 3.5px; }
+    </style>
+  </defs>
+  <!-- Ícone geométrico — hexágono com paleta gray -->
+  <g transform="translate(80, 80)">
+    <polygon points="0,-54 47,-27 47,27 0,54 -47,27 -47,-27" fill="#E8E8F4" stroke="#C8C8E0" stroke-width="1.8"/>
+    <polygon points="0,-30 26,-15 26,15 0,30 -26,15 -26,-15" fill="#D8F3DC" stroke="#52B788" stroke-width="1.2"/>
+    <!-- Seta diagonal — verde (símbolo de crescimento/receita) -->
+    <line x1="-17" y1="17" x2="17" y2="-17" stroke="#2D6A4F" stroke-width="3" stroke-linecap="round"/>
+    <polyline points="5,-17 17,-17 17,-5" fill="none" stroke="#2D6A4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="-17" cy="17" r="3" fill="#52B788"/>
+    <!-- Fragmentos: cinza (não verde) -->
+    <polygon points="27,-27 47,-27 47,-7" fill="#C8C8E0" opacity="0.6"/>
+    <polygon points="-27,27 -47,27 -47,7" fill="#E8E8F4" opacity="0.8"/>
+  </g>
+  <!-- Separador -->
+  <line x1="152" y1="36" x2="152" y2="124" stroke="#C8C8E0" stroke-width="1" stroke-dasharray="3,5"/>
+  <!-- Wordmark -->
+  <text x="172" y="88" class="wordmark">Cash Maker</text>
+  <text x="174" y="116" class="tagline">ORGANIZE · CONTROLE · CRESÇA</text>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="300" viewBox="0 0 280 300">
+  <defs>
+    <style>
+      .wordmark { font-family: Arial, sans-serif; font-size: 32px; font-weight: 700; fill: #1A1A2E; letter-spacing: -0.5px; }
+      .tagline  { font-family: Arial, sans-serif; font-size: 10px; font-weight: 400; fill: #8888AA; letter-spacing: 3px; }
+    </style>
+  </defs>
+  <g transform="translate(140, 112)">
+    <polygon points="0,-58 50,-29 50,29 0,58 -50,29 -50,-29" fill="#E8E8F4" stroke="#C8C8E0" stroke-width="1.8"/>
+    <polygon points="0,-32 28,-16 28,16 0,32 -28,16 -28,-16" fill="#D8F3DC" stroke="#52B788" stroke-width="1.2"/>
+    <line x1="-18" y1="18" x2="18" y2="-18" stroke="#2D6A4F" stroke-width="3" stroke-linecap="round"/>
+    <polyline points="5,-18 18,-18 18,-5" fill="none" stroke="#2D6A4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="-18" cy="18" r="3.2" fill="#52B788"/>
+    <polygon points="29,-29 50,-29 50,-8" fill="#C8C8E0" opacity="0.6"/>
+    <polygon points="-29,29 -50,29 -50,8" fill="#E8E8F4" opacity="0.8"/>
+  </g>
+  <line x1="70" y1="186" x2="210" y2="186" stroke="#C8C8E0" stroke-width="1" stroke-dasharray="3,5"/>
+  <text x="140" y="230" class="wordmark" text-anchor="middle">Cash Maker</text>
+  <text x="140" y="256" class="tagline" text-anchor="middle">ORGANIZE · CONTROLE · CRESÇA</text>
+</svg>
