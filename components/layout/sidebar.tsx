@@ -26,7 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard',       label: 'Dashboard',     icon: LayoutDashboard },
   { href: '/transactions',    label: 'Transações',    icon: List },
   { href: '/categories',      label: 'Categorias',    icon: Tag },
-  { href: '/fixed-expenses',  label: 'Gastos Fixos',  icon: RefreshCw, soon: true },
+  { href: '/fixed-expenses',  label: 'Gastos Fixos',  icon: RefreshCw },
   { href: '/reports',         label: 'Relatórios',    icon: BarChart3, soon: true },
 ]
 

@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/fixed-expenses",
+      "schedule": "1 3 * * *"
+    }
+  ]
+}
