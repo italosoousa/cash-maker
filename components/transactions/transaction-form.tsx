@@ -111,18 +111,22 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
 
   const isIncome    = form.type === 'INCOME'
   const accentColor = isIncome ? 'var(--status-income)' : 'var(--status-expense)'
-  const accentBg    = isIncome ? 'rgba(82,183,136,0.08)' : 'rgba(224,122,95,0.07)'
+  const accentBg    = isIncome ? 'rgba(82,183,136,0.12)' : 'rgba(224,122,95,0.09)'
+  const accentBorder = isIncome ? 'rgba(82,183,136,0.35)' : 'rgba(224,122,95,0.30)'
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[420px] bg-[var(--gray-50)] border-l border-[var(--gray-300)] p-0 flex flex-col overflow-hidden"
+        className="glass-sheet w-full sm:max-w-[420px] p-0 flex flex-col overflow-hidden rounded-l-3xl"
       >
-        {/* ── Topo colorido com título + toggle ─────────────────── */}
+        {/* ── Topo: título + toggle ────────────────────────────── */}
         <div
-          className="px-6 pt-6 pb-5 border-b border-[var(--gray-300)] shrink-0 transition-colors duration-300"
-          style={{ background: accentBg }}
+          className="px-6 pt-6 pb-5 shrink-0 transition-colors duration-300"
+          style={{
+            background: accentBg,
+            borderBottom: `1px solid ${accentBorder}`,
+          }}
         >
           <SheetHeader className="mb-5 text-left">
             <SheetTitle className="text-lg font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
@@ -131,7 +135,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
           </SheetHeader>
 
           {/* Toggle Receita / Despesa */}
-          <div className="flex rounded-xl overflow-hidden border border-[var(--gray-300)] bg-white/60">
+          <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: accentBorder, background: 'rgba(255,255,255,0.50)' }}>
             {(['EXPENSE', 'INCOME'] as const).map((t) => (
               <button
                 key={t}
@@ -160,17 +164,18 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
 
             {/* Valor — hero */}
             <div
-              className="rounded-2xl border px-4 py-4 transition-colors duration-200"
+              className="rounded-2xl px-4 py-4 transition-colors duration-200"
               style={{
-                borderColor: errors.amount ? 'var(--status-expense)' : accentColor + '55',
-                background: 'white',
+                background: 'rgba(255,255,255,0.60)',
+                border: `1px solid ${errors.amount ? 'var(--status-expense)' : accentBorder}`,
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
               }}
             >
               <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: accentColor }}>
                 Valor
               </p>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-base font-medium text-[var(--gray-500)]">R$</span>
+                <span className="text-base font-medium text-[var(--gray-400)]">R$</span>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -179,7 +184,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
                   value={form.amount}
                   onChange={e => set('amount', e.target.value)}
                   placeholder="0,00"
-                  className="flex-1 bg-transparent outline-none text-4xl font-bold font-[var(--font-mono)] placeholder:text-[var(--gray-300)] min-w-0"
+                  className="flex-1 bg-transparent outline-none text-4xl font-bold font-[var(--font-mono)] placeholder:text-[var(--gray-200)] min-w-0"
                   style={{ color: accentColor }}
                   disabled={loading}
                 />
@@ -189,8 +194,8 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
               )}
             </div>
 
-            {/* Separador visual */}
-            <div className="h-px bg-[var(--gray-200)]" />
+            {/* Separador */}
+            <div className="h-px bg-[rgba(200,200,224,0.4)]" />
 
             {/* Descrição */}
             <div className="space-y-1.5">
@@ -243,7 +248,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
               if (!cat) return null
               const Icon = getLucideIcon(cat.icon)
               return (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-[var(--gray-200)]">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border" style={{ background: 'rgba(255,255,255,0.55)', borderColor: 'rgba(200,200,224,0.5)' }}>
                   <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: cat.color + '22' }}>
                     <Icon size={13} style={{ color: cat.color }} />
                   </div>
@@ -254,7 +259,9 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
 
             {/* Notas */}
             <div className="space-y-1.5">
-              <label className="auth-label">Notas <span className="font-normal text-[var(--gray-400)]">(opcional)</span></label>
+              <label className="auth-label">
+                Notas <span className="font-normal text-[var(--gray-400)]">(opcional)</span>
+              </label>
               <textarea
                 value={form.notes}
                 onChange={e => set('notes', e.target.value)}
@@ -268,13 +275,16 @@ export function TransactionForm({ open, onOpenChange, transaction, onSuccess }: 
           </form>
         </div>
 
-        {/* ── Rodapé fixo com botão ─────────────────────────────── */}
-        <div className="shrink-0 px-6 pb-6 pt-3 border-t border-[var(--gray-200)] bg-[var(--gray-50)]">
+        {/* ── Rodapé fixo ──────────────────────────────────────── */}
+        <div
+          className="shrink-0 px-6 pb-6 pt-4"
+          style={{ borderTop: '1px solid rgba(200,200,224,0.35)', background: 'rgba(255,255,255,0.25)' }}
+        >
           <button
             type="submit"
             form="tx-form"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 disabled:opacity-60 shadow-sm"
             style={{ background: accentColor }}
           >
             {loading
