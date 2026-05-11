@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import * as LucideIcons from 'lucide-react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -18,10 +18,10 @@ function toDateInput(iso: string) {
 }
 
 const FREQUENCY_OPTS = [
-  { value: 'DAILY',   label: 'Diário'   },
-  { value: 'WEEKLY',  label: 'Semanal'  },
-  { value: 'MONTHLY', label: 'Mensal'   },
-  { value: 'YEARLY',  label: 'Anual'    },
+  { value: 'DAILY',   label: 'Diário'  },
+  { value: 'WEEKLY',  label: 'Semanal' },
+  { value: 'MONTHLY', label: 'Mensal'  },
+  { value: 'YEARLY',  label: 'Anual'   },
 ] as const
 
 interface FixedExpenseFormProps {
@@ -38,7 +38,6 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
   const [categories, setCategories] = useState<CategoryData[]>([])
 
   const [form, setForm] = useState({
-    type:       'EXPENSE' as 'INCOME' | 'EXPENSE',
     name:       '',
     amount:     '',
     frequency:  'MONTHLY' as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY',
@@ -57,7 +56,6 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
   useEffect(() => {
     if (fixedExpense) {
       setForm({
-        type:       fixedExpense.type,
         name:       fixedExpense.name,
         amount:     String(fixedExpense.amount),
         frequency:  fixedExpense.frequency,
@@ -69,7 +67,7 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
       })
     } else {
       setForm({
-        type: 'EXPENSE', name: '', amount: '', frequency: 'MONTHLY',
+        name: '', amount: '', frequency: 'MONTHLY',
         startDate: new Date().toISOString().split('T')[0], endDate: '',
         categoryId: '', notes: '', isActive: true,
       })
@@ -84,12 +82,12 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
 
   function validate() {
     const e: Record<string, string> = {}
-    if (!form.name.trim())                                e.name       = 'Nome obrigatório'
+    if (!form.name.trim())                               e.name       = 'Nome obrigatório'
     const amt = parseFloat(form.amount.replace(',', '.'))
-    if (!form.amount || isNaN(amt) || amt <= 0)          e.amount     = 'Informe um valor válido'
-    if (!form.startDate)                                  e.startDate  = 'Data de início obrigatória'
-    if (form.endDate && form.endDate <= form.startDate)  e.endDate    = 'Data final deve ser após o início'
-    if (!form.categoryId)                                 e.categoryId = 'Selecione uma categoria'
+    if (!form.amount || isNaN(amt) || amt <= 0)         e.amount     = 'Informe um valor válido'
+    if (!form.startDate)                                 e.startDate  = 'Data de início obrigatória'
+    if (form.endDate && form.endDate <= form.startDate) e.endDate    = 'Data final deve ser após o início'
+    if (!form.categoryId)                                e.categoryId = 'Selecione uma categoria'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -100,7 +98,7 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
     setLoading(true)
     try {
       const payload = {
-        type:       form.type,
+        type:       'EXPENSE',
         name:       form.name.trim(),
         amount:     parseFloat(form.amount.replace(',', '.')),
         frequency:  form.frequency,
@@ -127,59 +125,26 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
     }
   }
 
-  const isIncome     = form.type === 'INCOME'
-  const accentColor  = isIncome ? 'var(--status-income)' : 'var(--status-expense)'
-  const accentBg     = isIncome ? 'rgba(82,183,136,0.12)' : 'rgba(224,122,95,0.09)'
-  const accentBorder = isIncome ? 'rgba(82,183,136,0.35)' : 'rgba(224,122,95,0.30)'
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
         className="glass-sheet w-full sm:max-w-[420px] p-0 flex flex-col overflow-hidden rounded-l-3xl"
       >
-        {/* ── Topo: título + toggle ────────────────────────────── */}
-        <div
-          className="px-6 pt-6 pb-5 shrink-0 transition-colors duration-300"
-          style={{
-            background: accentBg,
-            borderBottom: `1px solid ${accentBorder}`,
-          }}
-        >
-          <SheetHeader className="mb-5 text-left">
+        {/* ── Topo ─────────────────────────────────────────────── */}
+        <div className="px-6 pt-6 pb-5 shrink-0 border-b border-[rgba(200,200,224,0.35)]">
+          <SheetHeader className="mb-1 text-left">
             <SheetTitle className="text-lg font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
               {isEdit ? 'Editar gasto fixo' : 'Novo gasto fixo'}
             </SheetTitle>
           </SheetHeader>
-
-          {/* Toggle Receita / Despesa */}
-          <div
-            className="flex rounded-xl overflow-hidden border"
-            style={{ borderColor: accentBorder, background: 'rgba(255,255,255,0.50)' }}
-          >
-            {(['EXPENSE', 'INCOME'] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => set('type', t)}
-                className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-all duration-200',
-                  form.type === t
-                    ? t === 'INCOME'
-                      ? 'bg-[var(--status-income)] text-white shadow-sm'
-                      : 'bg-[var(--status-expense)] text-white shadow-sm'
-                    : 'text-[var(--gray-500)]'
-                )}
-              >
-                {t === 'INCOME'
-                  ? <><TrendingUp size={15} /> Receita</>
-                  : <><TrendingDown size={15} /> Despesa</>}
-              </button>
-            ))}
+          <div className="flex items-center gap-1.5 mt-1">
+            <RefreshCw size={12} className="text-[var(--gray-400)]" />
+            <p className="text-xs text-[var(--gray-400)]">Débito recorrente automático</p>
           </div>
         </div>
 
-        {/* ── Corpo com scroll ──────────────────────────────────── */}
+        {/* ── Corpo ────────────────────────────────────────────── */}
         <div className="flex-1 overflow-y-auto">
           <form id="fe-form" onSubmit={handleSubmit} className="px-6 py-5 space-y-4" noValidate>
 
@@ -188,11 +153,11 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
               className="rounded-2xl px-4 py-4 transition-colors duration-200"
               style={{
                 background: 'rgba(255,255,255,0.60)',
-                border: `1px solid ${errors.amount ? 'var(--status-expense)' : accentBorder}`,
+                border: `1px solid ${errors.amount ? 'var(--status-expense)' : 'rgba(224,122,95,0.30)'}`,
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
               }}
             >
-              <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: accentColor }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-2 text-[var(--status-expense)]">
                 Valor
               </p>
               <div className="flex items-baseline gap-1.5">
@@ -205,8 +170,7 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
                   value={form.amount}
                   onChange={e => set('amount', e.target.value)}
                   placeholder="0,00"
-                  className="flex-1 bg-transparent outline-none text-4xl font-bold font-[var(--font-mono)] placeholder:text-[var(--gray-200)] min-w-0"
-                  style={{ color: accentColor }}
+                  className="flex-1 bg-transparent outline-none text-4xl font-bold font-[var(--font-mono)] placeholder:text-[var(--gray-200)] min-w-0 text-[var(--status-expense)]"
                   disabled={loading}
                 />
               </div>
@@ -225,7 +189,7 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
                 type="text"
                 value={form.name}
                 onChange={e => set('name', e.target.value)}
-                placeholder="Ex: Aluguel, Netflix, Salário..."
+                placeholder="Ex: Aluguel, Netflix, Academia..."
                 className="auth-input"
                 disabled={loading}
                 maxLength={100}
@@ -347,7 +311,7 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
                 <div>
                   <p className="text-sm font-medium text-[var(--gray-900)]">Ativo</p>
                   <p className="text-xs text-[var(--gray-500)]">
-                    {form.isActive ? 'Gerando transações automaticamente' : 'Pausado — não gera transações'}
+                    {form.isActive ? 'Debitando automaticamente' : 'Pausado — sem débitos'}
                   </p>
                 </div>
                 <button
@@ -370,7 +334,7 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
           </form>
         </div>
 
-        {/* ── Rodapé fixo ──────────────────────────────────────── */}
+        {/* ── Rodapé ───────────────────────────────────────────── */}
         <div
           className="shrink-0 px-6 pb-6 pt-4"
           style={{ borderTop: '1px solid rgba(200,200,224,0.35)', background: 'rgba(255,255,255,0.25)' }}
@@ -379,16 +343,13 @@ export function FixedExpenseForm({ open, onOpenChange, fixedExpense, onSuccess }
             type="submit"
             form="fe-form"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 disabled:opacity-60 shadow-sm"
-            style={{ background: accentColor }}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white transition-all duration-200 disabled:opacity-60 shadow-sm bg-[var(--gray-900)] hover:bg-[var(--gray-800)]"
           >
             {loading
               ? <Loader2 size={18} className="animate-spin" />
               : isEdit
                 ? 'Salvar alterações'
-                : isIncome
-                  ? '+ Criar receita fixa'
-                  : '+ Criar despesa fixa'}
+                : '+ Criar gasto fixo'}
           </button>
         </div>
       </SheetContent>
