@@ -10,6 +10,7 @@ import {
   Tag,
   RefreshCw,
   BarChart3,
+  Upload,
   LogOut,
   ChevronRight,
 } from 'lucide-react'
@@ -27,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/transactions',    label: 'Transações',    icon: List },
   { href: '/categories',      label: 'Categorias',    icon: Tag },
   { href: '/fixed-expenses',  label: 'Gastos Fixos',  icon: RefreshCw },
+  { href: '/importar',        label: 'Subir planilha', icon: Upload },
   { href: '/reports',         label: 'Relatórios',    icon: BarChart3, soon: true },
 ]
 
