@@ -16,10 +16,11 @@ export const CATEGORY_KEYWORDS: Record<string, string[]> = {
     'divino fogao', 'divino fogão', 'divino',
     // cafeterias / padarias / doces
     'padaria', 'panificadora', 'cafe ', 'café ', 'cafeteria', 'confeitaria',
-    'sorveteria', 'yogoberry', 'acai', 'açaí',
+    'sorveteria', 'yogoberry', 'acai', 'açaí', 'innova cafe', 'innova café',
     // estabelecimentos genéricos
     'restaurante', 'lanchonete', 'churrascaria', 'pizzaria', 'sushi', 'japonês',
     'comida caseira', 'comida', 'tia fa', 'quiosque', 'nacao beach', 'cande ',
+    'felicitta',
     // supermercados / atacados
     'supermercado', 'mercado', 'atacadista', 'hortifruti', 'feira', 'açougue',
     'adega ', 'superadega', 'ultra adega',
@@ -35,8 +36,9 @@ export const CATEGORY_KEYWORDS: Record<string, string[]> = {
     'posto garantia',
     // estacionamento
     'estacionamento', 'estac ', 'allpark', 'shoppingpark', 'park ',
+    'multiplan estacionamento', 'multiplan',
     // apps / táxi
-    'uber ', '99app', '99 ', 'cabify', 'turbi', 'yellow ',
+    'uber ', 'uber do brasil', '99app', '99 ', 'cabify', 'turbi', 'yellow ',
     // transporte público
     'metrô', 'metro ', 'onibus', 'ônibus', 'passagem', 'bilhete', 'brt ',
     'transporte', 'pedagio', 'pedágio',
@@ -85,6 +87,9 @@ export const CATEGORY_KEYWORDS: Record<string, string[]> = {
     'teatro', 'show ', 'evento ', 'ingresso', 'sympla', 'ticketmaster',
     // turismo / lazer
     'parque', 'club ', 'clube ', 'viagem', 'passeio', 'praia',
+    // esportes
+    'fitvolei', 'fit volei', 'volei', 'vôlei', 'beach volei', 'beach tennis',
+    'nacao beach', 'arena ', 'quadra ',
     // assinaturas / tech entertainment
     'microsoft*subscription', 'microsoft subscription',
     // EN
@@ -102,6 +107,8 @@ export const CATEGORY_KEYWORDS: Record<string, string[]> = {
     // escolas / universidades
     'escola', 'faculdade', 'universidade', 'college', 'colégio',
     'mensalidade', 'matrícula', 'matricula', 'material escolar',
+    'ceub', 'centro universitario', 'centro universitário',
+    'centro e u b', 'uni ',
     // livros / papelaria
     'livraria', 'amazon livros', 'saraiva', 'cultura ', 'papelaria',
     // cursos
@@ -134,13 +141,17 @@ export const CATEGORY_KEYWORDS: Record<string, string[]> = {
     // e-commerce
     'mercadolivre', 'mercadol', 'amazon ', 'shopee', 'aliexpress', 'shein',
     'americanas', 'casas bahia', 'extra ', 'magalu', 'magazine luiza',
+    'bom negocio', 'bom negócio', 'olx ',
+    'mercado pago', 'mercadopago', 'pix marketplace',
+    // shoppings
+    'shopping ', 'shopping iguatemi', 'iguatemi', 'shop pier', 'pier 21',
     // moda
     'nike', 'adidas', 'fisia nike', 'renner', 'riachuelo', 'zara ', 'hm ',
     'h&m', 'cia maritima', 'lupo ', 'puma ',
     // eletrônicos
     'apple store', 'samsung', 'positivo', 'kabum', 'pichau', 'terabyte',
     // outras lojas
-    'shopping ', 'loja ', 'lojas ',
+    'loja ', 'lojas ',
     // EN
     'store', 'shop', 'clothing', 'electronics', 'retail', 'fashion',
   ],

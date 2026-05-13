@@ -2,6 +2,7 @@ import { NextResponse }             from 'next/server'
 import { auth }                     from '@/lib/auth'
 import { prisma }                   from '@/lib/prisma'
 import { parseNubankCredit }        from '@/lib/importar/parsers/nubank-credit'
+import { parseNubankAccount }       from '@/lib/importar/parsers/nubank-account'
 import type { ImportType, PreviewResult } from '@/lib/importar/types'
 
 /**
@@ -47,6 +48,8 @@ export async function POST(request: Request) {
   try {
     if (bank === 'nubank' && importType === 'fatura') {
       rows = parseNubankCredit(csvText)
+    } else if (bank === 'nubank' && importType === 'extrato') {
+      rows = parseNubankAccount(csvText)
     } else {
       return NextResponse.json(
         { error: `Parser para "${bank} / ${importType}" ainda não disponível.` },
@@ -69,20 +72,29 @@ export async function POST(request: Request) {
 
   // Resolve categoryId para cada linha
   for (const row of rows) {
-    if (row.rowType !== 'EXPENSE') continue
-
-    if (row.categoryName) {
-      row.categoryId = catMap.get(row.categoryName.toLowerCase()) ?? outrosId
-    } else {
-      row.categoryId = null   // precisará de revisão manual
+    if (row.rowType === 'EXPENSE') {
+      if (row.categoryName) {
+        row.categoryId = catMap.get(row.categoryName.toLowerCase()) ?? outrosId
+      } else {
+        row.categoryId = null   // precisará de revisão manual
+      }
+    } else if (row.rowType === 'INCOME') {
+      // Receitas: pré-atribui "Outros" — o usuário pode trocar na revisão
+      row.categoryId = outrosId
     }
   }
 
   // Calcula totais
   const expenseRows    = rows.filter(r => r.rowType === 'EXPENSE')
+  const incomeRows     = rows.filter(r => r.rowType === 'INCOME')
   const paymentRow     = rows.find(r => r.rowType === 'PAYMENT')
+  const investRows     = rows.filter(r => r.rowType === 'INVESTMENT')
+
   const totalExpense   = expenseRows.reduce((s, r) => s + r.amount, 0)
+  const totalIncome    = incomeRows.reduce((s, r)  => s + r.amount, 0)
   const paymentAmount  = paymentRow?.amount ?? null
+  const investmentCount = investRows.length
+
   const uncategorizedCount = expenseRows.filter(r => !r.categoryId).length
 
   const result: PreviewResult = {
@@ -90,7 +102,9 @@ export async function POST(request: Request) {
     importType,
     rows,
     totalExpense,
+    totalIncome,
     paymentAmount,
+    investmentCount,
     uncategorizedCount,
   }
 

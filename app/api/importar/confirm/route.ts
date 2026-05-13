@@ -8,6 +8,7 @@ const rowSchema = z.object({
   description: z.string(),
   amount:      z.number().positive(),
   categoryId:  z.string(),
+  type:        z.enum(['EXPENSE', 'INCOME']).default('EXPENSE'),
 })
 
 const confirmSchema = z.object({
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     rows.map(row =>
       prisma.transaction.create({
         data: {
-          type:        'EXPENSE',
+          type:        row.type,
           amount:      row.amount,
           description: row.description,
           date:        new Date(row.date + 'T12:00:00.000Z'),
