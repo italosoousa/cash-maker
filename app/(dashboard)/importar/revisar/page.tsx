@@ -119,6 +119,7 @@ export default function RevisarPage() {
         body:    JSON.stringify({
           rows:       payload,
           importFrom: preview?.importType, // 'fatura' | 'extrato'
+          bank:       preview?.bank,       // 'nubank' | 'bb' | etc.
         }),
       })
       const json = await res.json()

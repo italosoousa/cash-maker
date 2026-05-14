@@ -5,9 +5,10 @@ import { TrendingUp, TrendingDown, AlertTriangle, ArrowRight, Tag, Receipt, Chev
 import * as LucideIcons from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
-import { BalanceChart } from '@/components/dashboard/balance-chart'
-import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { cn, formatDate } from '@/lib/utils'
+import { BalanceChart }       from '@/components/dashboard/balance-chart'
+import { DashboardFatura }    from '@/components/dashboard/dashboard-fatura'
+import { CurrencyDisplay }    from '@/components/shared/currency-display'
+import { cn, formatDate }     from '@/lib/utils'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -573,6 +574,57 @@ export function DashboardClient({ firstName }: { firstName: string }) {
   const incomeSparkData  = (data?.monthlyEvolution ?? []).map(m => m.income)
   const expenseSparkData = (data?.monthlyEvolution ?? []).map(m => m.expense)
 
+  // ── Render fatura / extrato view ─────────────────────────────────────────────
+  if (view === 'fatura' || view === 'extrato') {
+    return (
+      <div className="space-y-5">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
+              {view === 'fatura' ? 'Cartão de Crédito' : 'Extrato Bancário'}
+            </h1>
+            <p className="text-xs text-[var(--gray-500)] mt-0.5">
+              {view === 'fatura'
+                ? 'Gastos importados via fatura do cartão'
+                : 'Movimentações importadas via extrato da conta'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Period pills */}
+            <div className="hidden sm:flex gap-1 p-1 rounded-xl bg-[var(--gray-100)] border border-[var(--gray-300)]">
+              {PERIODS.map(p => (
+                <button
+                  key={p.key}
+                  onClick={() => setPeriod(p.key)}
+                  className={cn(
+                    'px-2.5 py-1 rounded-lg text-xs font-medium transition-all',
+                    period === p.key
+                      ? 'bg-[var(--gray-900)] text-white shadow-sm'
+                      : 'text-[var(--gray-600)] hover:text-[var(--gray-900)]'
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <ViewDropdown view={view} onChange={setView} />
+          </div>
+        </div>
+
+        <DashboardFatura
+          period={period}
+          summary={data?.summary}
+          monthlyData={data?.monthlyEvolution ?? []}
+          transactions={data?.recentTransactions ?? []}
+          loading={loading}
+          importFrom={view}
+        />
+      </div>
+    )
+  }
+
+  // ── Default (all) view ────────────────────────────────────────────────────────
   return (
     <div className="flex gap-5 xl:gap-6 items-start">
 
@@ -585,14 +637,6 @@ export function DashboardClient({ firstName }: { firstName: string }) {
             <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
               Dashboard
             </h1>
-            {view !== 'all' && (
-              <p className="text-xs text-[var(--gray-500)] mt-0.5">
-                Exibindo somente dados de{' '}
-                <span className="font-semibold text-[var(--gray-700)]">
-                  {view === 'fatura' ? 'cartão de crédito' : 'extrato bancário'}
-                </span>
-              </p>
-            )}
           </div>
           <ViewDropdown view={view} onChange={v => { setView(v) }} />
         </div>

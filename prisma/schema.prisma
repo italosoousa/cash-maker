@@ -71,6 +71,7 @@ model Transaction {
   notes       String?                              // observações opcionais
   source      TransactionSource @default(MANUAL)   // MANUAL | AUTO (gerado por gasto fixo) | IMPORT
   importFrom  String?                              // 'fatura' | 'extrato' — preenchido só quando source=IMPORT
+  bank        String?                              // 'nubank' | 'bb' | etc. — banco de origem da importação
 
   // Soft delete — RN02
   deletedAt   DateTime?

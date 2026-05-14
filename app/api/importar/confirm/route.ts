@@ -13,7 +13,8 @@ const rowSchema = z.object({
 
 const confirmSchema = z.object({
   rows:       z.array(rowSchema).min(1),
-  importFrom: z.enum(['fatura', 'extrato']).optional(), // origem da importação
+  importFrom: z.enum(['fatura', 'extrato']).optional(),
+  bank:       z.string().optional(), // 'nubank' | 'bb' | etc.
 })
 
 /**
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
   }
 
-  const { rows, importFrom } = parsed.data
+  const { rows, importFrom, bank } = parsed.data
 
   // Verifica que todas as categorias pertencem ao usuário
   const categoryIds = [...new Set(rows.map(r => r.categoryId))]
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
           date:        new Date(row.date + 'T12:00:00.000Z'),
           source:      'IMPORT',
           importFrom:  importFrom ?? null,
+          bank:        bank ?? null,
           userId:      session.user.id,
           categoryId:  row.categoryId,
         },
