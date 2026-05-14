@@ -14,6 +14,8 @@ export const updateTransactionSchema = transactionSchema.partial()
 export const transactionFiltersSchema = z.object({
   type:       z.enum(['INCOME', 'EXPENSE', 'ALL']).optional(),
   categoryId: z.string().optional(),
+  source:     z.enum(['MANUAL', 'AUTO', 'IMPORT']).optional(),
+  search:     z.string().optional(),
   startDate:  z.string().optional(),
   endDate:    z.string().optional(),
   page:       z.coerce.number().int().positive().default(1),

@@ -4,7 +4,7 @@ import type { TransactionInput, TransactionFilters } from '@/lib/validations/tra
 
 export const transactionRepository = {
   async findAllByUser(userId: string, filters: TransactionFilters) {
-    const { type, categoryId, startDate, endDate, page, limit } = filters
+    const { type, categoryId, source, search, startDate, endDate, page, limit } = filters
     const skip = (page - 1) * limit
 
     const where: Prisma.TransactionWhereInput = {
@@ -12,6 +12,8 @@ export const transactionRepository = {
       deletedAt: null,
       ...(type && type !== 'ALL' && { type }),
       ...(categoryId && { categoryId }),
+      ...(source     && { source }),
+      ...(search     && { description: { contains: search, mode: 'insensitive' } }),
       ...(startDate || endDate
         ? {
             date: {
@@ -22,7 +24,7 @@ export const transactionRepository = {
         : {}),
     }
 
-    const [items, total] = await Promise.all([
+    const [items, total, aggr] = await Promise.all([
       prisma.transaction.findMany({
         where,
         include: { category: { select: { id: true, name: true, icon: true, color: true } } },
@@ -31,9 +33,18 @@ export const transactionRepository = {
         take: limit,
       }),
       prisma.transaction.count({ where }),
+      // Totais reais do conjunto filtrado completo (não só da página)
+      prisma.transaction.groupBy({
+        by:    ['type'],
+        where,
+        _sum:  { amount: true },
+      }),
     ])
 
-    return { items, total, page, limit, totalPages: Math.ceil(total / limit) }
+    const totalIncome  = Number(aggr.find(r => r.type === 'INCOME')?._sum.amount  ?? 0)
+    const totalExpense = Number(aggr.find(r => r.type === 'EXPENSE')?._sum.amount ?? 0)
+
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit), totalIncome, totalExpense }
   },
 
   findById(id: string, userId: string) {
