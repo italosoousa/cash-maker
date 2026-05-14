@@ -70,6 +70,7 @@ model Transaction {
   date        DateTime                              // data da transação (UTC)
   notes       String?                              // observações opcionais
   source      TransactionSource @default(MANUAL)   // MANUAL | AUTO (gerado por gasto fixo) | IMPORT
+  importFrom  String?                              // 'fatura' | 'extrato' — preenchido só quando source=IMPORT
 
   // Soft delete — RN02
   deletedAt   DateTime?

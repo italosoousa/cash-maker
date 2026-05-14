@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { TrendingUp, TrendingDown, AlertTriangle, ArrowRight, Tag, Receipt } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { TrendingUp, TrendingDown, AlertTriangle, ArrowRight, Tag, Receipt, ChevronDown, CreditCard, Landmark, Check } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
@@ -12,6 +12,7 @@ import { cn, formatDate } from '@/lib/utils'
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Period = 'today' | 'week' | 'month' | 'year'
+type View   = 'all' | 'fatura' | 'extrato'
 
 const PERIODS: { key: Period; label: string }[] = [
   { key: 'today', label: 'Hoje' },
@@ -88,6 +89,131 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
         />
       </LineChart>
     </ResponsiveContainer>
+  )
+}
+
+// ─── View Dropdown ────────────────────────────────────────────────────────────
+
+const VIEW_OPTIONS: {
+  value:    View
+  label:    string
+  sublabel: string
+  icon:     React.ElementType
+  soon?:    boolean
+}[] = [
+  { value: 'all',     label: 'Visão geral',        sublabel: 'Todas as transações',      icon: Landmark },
+  { value: 'fatura',  label: 'Cartão de crédito',  sublabel: 'Importações via fatura',   icon: CreditCard },
+  { value: 'extrato', label: 'Extrato bancário',   sublabel: 'Importações via extrato',  icon: Landmark },
+]
+
+const SOON_OPTIONS = [
+  { label: 'Banco do Brasil',  sublabel: 'Integração bancária' },
+  { label: 'PicPay',           sublabel: 'Integração bancária' },
+  { label: 'Bradesco',         sublabel: 'Integração bancária' },
+  { label: 'Santander',        sublabel: 'Integração bancária' },
+]
+
+function ViewDropdown({ view, onChange }: { view: View; onChange: (v: View) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const current = VIEW_OPTIONS.find(o => o.value === view)!
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen(v => !v)}
+        className={cn(
+          'flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all',
+          open
+            ? 'bg-[var(--gray-100)] border-[var(--gray-400)] text-[var(--gray-900)]'
+            : 'border-[var(--gray-300)] text-[var(--gray-600)] hover:bg-[var(--gray-100)] hover:border-[var(--gray-400)]'
+        )}
+      >
+        <current.icon size={14} className="shrink-0" />
+        <span>{current.label}</span>
+        <ChevronDown size={13} className={cn('transition-transform duration-200', open && 'rotate-180')} />
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="absolute top-full left-0 mt-2 w-64 z-50 rounded-2xl border border-[var(--gray-300)] bg-white/[0.97] backdrop-blur-xl shadow-[0_16px_48px_rgba(26,26,46,0.14)] overflow-hidden">
+
+          {/* Available views */}
+          <div className="p-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-400)] px-2 py-1.5">
+              Visualizações
+            </p>
+            {VIEW_OPTIONS.map(opt => {
+              const isActive = view === opt.value
+              const Icon = opt.icon
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => { onChange(opt.value); setOpen(false) }}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-2 py-2.5 rounded-xl text-left transition-colors group',
+                    isActive ? 'bg-[var(--gray-900)]' : 'hover:bg-[var(--gray-100)]'
+                  )}
+                >
+                  <div className={cn(
+                    'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
+                    isActive ? 'bg-white/20' : 'bg-[var(--gray-100)] group-hover:bg-[var(--gray-200)]'
+                  )}>
+                    <Icon size={13} className={isActive ? 'text-white' : 'text-[var(--gray-600)]'} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={cn('text-xs font-semibold', isActive ? 'text-white' : 'text-[var(--gray-900)]')}>
+                      {opt.label}
+                    </p>
+                    <p className={cn('text-[10px]', isActive ? 'text-white/70' : 'text-[var(--gray-400)]')}>
+                      {opt.sublabel}
+                    </p>
+                  </div>
+                  {isActive && <Check size={13} className="text-white shrink-0" />}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Divider */}
+          <div className="mx-3 border-t border-[var(--gray-200)]" />
+
+          {/* Coming soon */}
+          <div className="p-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-400)] px-2 py-1.5">
+              Em breve
+            </p>
+            {SOON_OPTIONS.map(opt => (
+              <div
+                key={opt.label}
+                className="flex items-center gap-3 px-2 py-2.5 rounded-xl opacity-50 cursor-not-allowed"
+              >
+                <div className="w-7 h-7 rounded-lg bg-[var(--gray-100)] flex items-center justify-center shrink-0">
+                  <Landmark size={13} className="text-[var(--gray-400)]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-[var(--gray-700)]">{opt.label}</p>
+                  <p className="text-[10px] text-[var(--gray-400)]">{opt.sublabel}</p>
+                </div>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--gray-200)] text-[var(--gray-500)] uppercase tracking-wider shrink-0">
+                  Em breve
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -424,19 +550,20 @@ function RightPanel({
 
 export function DashboardClient({ firstName }: { firstName: string }) {
   const [period,  setPeriod]  = useState<Period>('month')
+  const [view,    setView]    = useState<View>('all')
   const [data,    setData]    = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const res  = await fetch(`/api/dashboard?period=${period}`)
+      const res  = await fetch(`/api/dashboard?period=${period}&view=${view}`)
       if (!res.ok) throw new Error()
       const json = await res.json()
       setData(json.data)
     } catch { /* keep skeleton */ }
     finally  { setLoading(false) }
-  }, [period])
+  }, [period, view])
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -451,6 +578,24 @@ export function DashboardClient({ firstName }: { firstName: string }) {
 
       {/* ── Main column ─────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 space-y-5">
+
+        {/* ── View selector header ──────────────────────────────── */}
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
+              Dashboard
+            </h1>
+            {view !== 'all' && (
+              <p className="text-xs text-[var(--gray-500)] mt-0.5">
+                Exibindo somente dados de{' '}
+                <span className="font-semibold text-[var(--gray-700)]">
+                  {view === 'fatura' ? 'cartão de crédito' : 'extrato bancário'}
+                </span>
+              </p>
+            )}
+          </div>
+          <ViewDropdown view={view} onChange={v => { setView(v) }} />
+        </div>
 
         {/* Negative balance alert — RN01 */}
         {!loading && s && s.balance < 0 && (

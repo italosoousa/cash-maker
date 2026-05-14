@@ -2,6 +2,13 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 export type DashboardPeriod = 'today' | 'week' | 'month' | 'year'
+export type DashboardView   = 'all' | 'fatura' | 'extrato'
+
+function viewFilter(view: DashboardView): import('@prisma/client').Prisma.TransactionWhereInput {
+  if (view === 'fatura')  return { importFrom: 'fatura'  }
+  if (view === 'extrato') return { importFrom: 'extrato' }
+  return {}
+}
 
 function getPeriodRange(period: DashboardPeriod): { start: Date; end: Date; prevStart: Date; prevEnd: Date } {
   const now   = new Date()
@@ -36,10 +43,13 @@ function getPeriodRange(period: DashboardPeriod): { start: Date; end: Date; prev
   return { start, end, prevStart, prevEnd }
 }
 
-async function sumByType(userId: string, start: Date, end: Date) {
+async function sumByType(
+  userId: string, start: Date, end: Date,
+  extra: import('@prisma/client').Prisma.TransactionWhereInput = {}
+) {
   const rows = await prisma.transaction.groupBy({
     by:    ['type'],
-    where: { userId, deletedAt: null, date: { gte: start, lt: end } },
+    where: { userId, deletedAt: null, date: { gte: start, lt: end }, ...extra },
     _sum:  { amount: true },
   })
   const income  = Number(rows.find(r => r.type === 'INCOME')?._sum.amount  ?? 0)
@@ -53,20 +63,21 @@ function pct(curr: number, prev: number) {
 }
 
 export const dashboardService = {
-  async getSummary(userId: string, period: DashboardPeriod) {
+  async getSummary(userId: string, period: DashboardPeriod, view: DashboardView = 'all') {
     const { start, end, prevStart, prevEnd } = getPeriodRange(period)
+    const vf = viewFilter(view)
 
     const [curr, prev] = await Promise.all([
-      sumByType(userId, start, end),
-      sumByType(userId, prevStart, prevEnd),
+      sumByType(userId, start, end, vf),
+      sumByType(userId, prevStart, prevEnd, vf),
     ])
 
     const balance = curr.income - curr.expense
 
-    // Saldo total (tudo, sem filtro de período)
+    // Saldo total (sem filtro de período, mas com filtro de view)
     const allRows = await prisma.transaction.groupBy({
       by:    ['type'],
-      where: { userId, deletedAt: null },
+      where: { userId, deletedAt: null, ...vf },
       _sum:  { amount: true },
     })
     const totalIncome  = Number(allRows.find(r => r.type === 'INCOME')?._sum.amount  ?? 0)
@@ -83,12 +94,13 @@ export const dashboardService = {
     }
   },
 
-  async getCategoryBreakdown(userId: string, period: DashboardPeriod) {
+  async getCategoryBreakdown(userId: string, period: DashboardPeriod, view: DashboardView = 'all') {
     const { start, end } = getPeriodRange(period)
+    const vf = viewFilter(view)
 
     const rows = await prisma.transaction.groupBy({
       by:    ['categoryId', 'type'],
-      where: { userId, deletedAt: null, type: 'EXPENSE', date: { gte: start, lt: end } },
+      where: { userId, deletedAt: null, type: 'EXPENSE', date: { gte: start, lt: end }, ...vf },
       _sum:  { amount: true },
     })
 
@@ -115,7 +127,8 @@ export const dashboardService = {
     }).sort((a, b) => b.total - a.total)
   },
 
-  async getMonthlyEvolution(userId: string) {
+  async getMonthlyEvolution(userId: string, view: DashboardView = 'all') {
+    const vf = viewFilter(view)
     // Últimos 6 meses
     const months: { label: string; income: number; expense: number }[] = []
 
@@ -130,7 +143,7 @@ export const dashboardService = {
 
       const rows = await prisma.transaction.groupBy({
         by:    ['type'],
-        where: { userId, deletedAt: null, date: { gte: start, lt: end } },
+        where: { userId, deletedAt: null, date: { gte: start, lt: end }, ...vf },
         _sum:  { amount: true },
       })
 
@@ -143,9 +156,10 @@ export const dashboardService = {
     return months
   },
 
-  async getRecentTransactions(userId: string) {
+  async getRecentTransactions(userId: string, view: DashboardView = 'all') {
+    const vf = viewFilter(view)
     return prisma.transaction.findMany({
-      where:   { userId, deletedAt: null },
+      where:   { userId, deletedAt: null, ...vf },
       include: { category: { select: { id: true, name: true, icon: true, color: true } } },
       orderBy: { date: 'desc' },
       take:    6,

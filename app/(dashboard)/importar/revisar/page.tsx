@@ -116,7 +116,10 @@ export default function RevisarPage() {
       const res  = await fetch('/api/importar/confirm', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ rows: payload }),
+        body:    JSON.stringify({
+          rows:       payload,
+          importFrom: preview?.importType, // 'fatura' | 'extrato'
+        }),
       })
       const json = await res.json()
 
