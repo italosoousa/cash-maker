@@ -13,7 +13,7 @@ import { cn, formatDate }   from '@/lib/utils'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Period = 'today' | 'week' | 'month' | 'year'
+type Period = 'today' | 'week' | 'month' | 'year' | 'custom'
 
 interface MonthItem { label: string; income: number; expense: number }
 

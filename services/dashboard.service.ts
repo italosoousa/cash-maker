@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
-export type DashboardPeriod = 'today' | 'week' | 'month' | 'year'
+export type DashboardPeriod = 'today' | 'week' | 'month' | 'year' | 'custom'
 export type DashboardView   = 'all' | 'fatura' | 'extrato'
 
 function viewFilter(view: DashboardView): import('@prisma/client').Prisma.TransactionWhereInput {
@@ -10,14 +10,31 @@ function viewFilter(view: DashboardView): import('@prisma/client').Prisma.Transa
   return {}
 }
 
-function getPeriodRange(period: DashboardPeriod): { start: Date; end: Date; prevStart: Date; prevEnd: Date } {
+function getPeriodRange(
+  period: DashboardPeriod,
+  customDate?: string,    // YYYY-MM-DD (single day)
+  fromDate?: string,      // YYYY-MM-DD (range start)
+  toDate?: string,        // YYYY-MM-DD (range end)
+): { start: Date; end: Date; prevStart: Date; prevEnd: Date } {
   const now   = new Date()
   const tz    = 'America/Sao_Paulo'
   const today = new Date(new Date().toLocaleDateString('en-CA', { timeZone: tz }) + 'T00:00:00Z')
 
   let start: Date, end: Date, prevStart: Date, prevEnd: Date
 
-  if (period === 'today') {
+  if (period === 'custom' && fromDate && toDate) {
+    start   = new Date(fromDate + 'T00:00:00Z')
+    end     = new Date(toDate   + 'T00:00:00Z'); end.setUTCDate(end.getUTCDate() + 1)
+    const dur = end.getTime() - start.getTime()
+    prevEnd   = new Date(start)
+    prevStart = new Date(start.getTime() - dur)
+  } else if (period === 'custom' && customDate) {
+    // Filtra o dia inteiro (00:00 → 00:00 do dia seguinte, UTC)
+    start     = new Date(customDate + 'T00:00:00Z')
+    end       = new Date(customDate + 'T00:00:00Z'); end.setUTCDate(end.getUTCDate() + 1)
+    prevStart = new Date(customDate + 'T00:00:00Z'); prevStart.setUTCDate(prevStart.getUTCDate() - 1)
+    prevEnd   = new Date(customDate + 'T00:00:00Z')
+  } else if (period === 'today') {
     start    = today
     end      = new Date(today); end.setDate(end.getDate() + 1)
     prevEnd  = new Date(today)
@@ -63,8 +80,8 @@ function pct(curr: number, prev: number) {
 }
 
 export const dashboardService = {
-  async getSummary(userId: string, period: DashboardPeriod, view: DashboardView = 'all') {
-    const { start, end, prevStart, prevEnd } = getPeriodRange(period)
+  async getSummary(userId: string, period: DashboardPeriod, view: DashboardView = 'all', customDate?: string, fromDate?: string, toDate?: string) {
+    const { start, end, prevStart, prevEnd } = getPeriodRange(period, customDate, fromDate, toDate)
     const vf = viewFilter(view)
 
     const [curr, prev] = await Promise.all([
@@ -72,7 +89,9 @@ export const dashboardService = {
       sumByType(userId, prevStart, prevEnd, vf),
     ])
 
-    const balance = curr.income - curr.expense
+    const currBalance = curr.income - curr.expense
+    const prevBalance = prev.income - prev.expense
+    const balance     = currBalance
 
     // Saldo total (sem filtro de período, mas com filtro de view)
     const allRows = await prisma.transaction.groupBy({
@@ -85,17 +104,18 @@ export const dashboardService = {
     const totalBalance = totalIncome - totalExpense
 
     return {
-      balance:          totalBalance,
-      periodIncome:     curr.income,
-      periodExpense:    curr.expense,
-      periodBalance:    balance,
-      incomeVariation:  pct(curr.income,  prev.income),
-      expenseVariation: pct(curr.expense, prev.expense),
+      balance:           totalBalance,
+      periodIncome:      curr.income,
+      periodExpense:     curr.expense,
+      periodBalance:     balance,
+      incomeVariation:   pct(curr.income,   prev.income),
+      expenseVariation:  pct(curr.expense,  prev.expense),
+      balanceVariation:  pct(currBalance,   prevBalance),
     }
   },
 
-  async getCategoryBreakdown(userId: string, period: DashboardPeriod, view: DashboardView = 'all') {
-    const { start, end } = getPeriodRange(period)
+  async getCategoryBreakdown(userId: string, period: DashboardPeriod, view: DashboardView = 'all', customDate?: string, fromDate?: string, toDate?: string) {
+    const { start, end } = getPeriodRange(period, customDate, fromDate, toDate)
     const vf = viewFilter(view)
 
     const rows = await prisma.transaction.groupBy({
@@ -164,5 +184,84 @@ export const dashboardService = {
       orderBy: { date: 'desc' },
       take:    6,
     })
+  },
+
+  async getCategoryInsights(userId: string, period: DashboardPeriod, view: DashboardView = 'all', customDate?: string) {
+    const { start, end, prevStart, prevEnd } = getPeriodRange(period, customDate)
+    const vf = viewFilter(view)
+
+    const expenseWhere = { userId, deletedAt: null, type: 'EXPENSE' as const, ...vf }
+
+    const [currRows, prevRows, incomeRows, txCounts] = await Promise.all([
+      prisma.transaction.groupBy({
+        by:    ['categoryId'],
+        where: { ...expenseWhere, date: { gte: start, lt: end } },
+        _sum:  { amount: true },
+      }),
+      prisma.transaction.groupBy({
+        by:    ['categoryId'],
+        where: { ...expenseWhere, date: { gte: prevStart, lt: prevEnd } },
+        _sum:  { amount: true },
+      }),
+      prisma.transaction.groupBy({
+        by:    ['type'],
+        where: { userId, deletedAt: null, type: 'INCOME', date: { gte: start, lt: end }, ...vf },
+        _sum:  { amount: true },
+      }),
+      prisma.transaction.groupBy({
+        by:     ['categoryId'],
+        where:  { ...expenseWhere, date: { gte: start, lt: end } },
+        _count: { _all: true },
+      }),
+    ])
+
+    const totalExpense = currRows.reduce((s, r) => s + Number(r._sum.amount ?? 0), 0)
+    const totalIncome  = Number(incomeRows[0]?._sum.amount ?? 0)
+    const totalTx      = txCounts.reduce((s, r) => s + r._count._all, 0)
+
+    if (currRows.length === 0) {
+      return {
+        categoryBreakdown: [],
+        kpis: { totalExpense: 0, totalIncome, topCategory: null, avgTicket: 0 },
+      }
+    }
+
+    const catIds = currRows.map(r => r.categoryId).filter((id): id is string => !!id)
+    const cats = await prisma.category.findMany({
+      where:  { id: { in: catIds } },
+      select: { id: true, name: true, icon: true, color: true, isDefault: true },
+    })
+
+    const breakdown = currRows.map(r => {
+      const cat     = cats.find(c => c.id === r.categoryId)
+      const amt     = Number(r._sum.amount ?? 0)
+      const prevAmt = Number(prevRows.find(p => p.categoryId === r.categoryId)?._sum.amount ?? 0)
+      const trend   = prevAmt === 0 ? null : Math.round(((amt - prevAmt) / prevAmt) * 100)
+      const count   = txCounts.find(t => t.categoryId === r.categoryId)?._count._all ?? 0
+      return {
+        categoryId: r.categoryId,
+        name:       cat?.name      ?? 'Outros',
+        icon:       cat?.icon      ?? 'tag',
+        color:      cat?.color     ?? '#9DC4AD',
+        isDefault:  cat?.isDefault ?? false,
+        total:      amt,
+        percentage: totalExpense > 0 ? Math.round((amt / totalExpense) * 100) : 0,
+        count,
+        trend,
+      }
+    }).sort((a, b) => b.total - a.total)
+
+    const top      = breakdown[0]
+    const avgTicket = totalTx > 0 ? totalExpense / totalTx : 0
+
+    return {
+      categoryBreakdown: breakdown,
+      kpis: {
+        totalExpense,
+        totalIncome,
+        topCategory: top ? { name: top.name, percentage: top.percentage } : null,
+        avgTicket,
+      },
+    }
   },
 }

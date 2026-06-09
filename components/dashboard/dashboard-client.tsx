@@ -1,26 +1,32 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { TrendingUp, TrendingDown, AlertTriangle, ArrowRight, Tag, Receipt, ChevronDown, CreditCard, Landmark, Check } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import {
+  ArrowUpRight, ArrowDownLeft, ArrowDownRight, ArrowRight,
+  Wallet, PiggyBank, Plus, AlertTriangle, Tag, Receipt,
+  Calendar, CalendarDays, CalendarRange, X,
+} from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 import Link from 'next/link'
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
-import { BalanceChart }       from '@/components/dashboard/balance-chart'
-import { DashboardFatura }    from '@/components/dashboard/dashboard-fatura'
-import { CurrencyDisplay }    from '@/components/shared/currency-display'
-import { cn, formatDate }     from '@/lib/utils'
+import {
+  AreaChart, Area,
+  BarChart, Bar,
+  PieChart as RechartsPieChart, Pie, Cell,
+  LineChart, Line,
+  XAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
+import { startOfWeek, endOfWeek } from 'date-fns'
+import { DashboardFatura }  from '@/components/dashboard/dashboard-fatura'
+import { CurrencyDisplay }  from '@/components/shared/currency-display'
+import { cn, formatDate }   from '@/lib/utils'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Period = 'today' | 'week' | 'month' | 'year'
-type View   = 'all' | 'fatura' | 'extrato'
-
-const PERIODS: { key: Period; label: string }[] = [
-  { key: 'today', label: 'Hoje' },
-  { key: 'week',  label: 'Esta semana' },
-  { key: 'month', label: 'Este mês' },
-  { key: 'year',  label: 'Este ano' },
-]
+type Period     = 'today' | 'week' | 'month' | 'year' | 'custom'
+type View       = 'all' | 'fatura' | 'extrato'
+type CustomMode = 'day' | 'week' | 'interval'
 
 interface Summary {
   balance:          number
@@ -29,6 +35,7 @@ interface Summary {
   periodBalance:    number
   incomeVariation:  number
   expenseVariation: number
+  balanceVariation: number
 }
 
 interface CategoryItem {
@@ -70,147 +77,275 @@ function getLucideIcon(name: string): React.ElementType {
 }
 
 function fmt(value: number) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value)
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency', currency: 'BRL', maximumFractionDigits: 0,
+  }).format(value)
+}
+
+function getPeriodLabel(period: Period, fromDate: string): string {
+  if (period === 'today')  return 'Hoje'
+  if (period === 'week')   return 'Esta semana'
+  if (period === 'year')   return 'Este ano'
+  if (period === 'custom' && fromDate) {
+    const d = new Date(fromDate + 'T12:00:00')
+    return d.toLocaleDateString('pt-BR', { month: 'long' })
+  }
+  return new Date().toLocaleDateString('pt-BR', { month: 'long' })
+}
+
+function getPeriodSince(period: Period, fromDate: string): string {
+  if (period === 'today') return 'Hoje'
+  if (period === 'week')  return 'Esta semana'
+  if (period === 'year')  return 'Este ano'
+  const month = getPeriodLabel(period, fromDate)
+  return 'Este ' + month.charAt(0).toUpperCase() + month.slice(1)
+}
+
+// ─── Trend badge ─────────────────────────────────────────────────────────────
+
+function TrendBadge({ value }: { value: number }) {
+  if (value === 0) {
+    return (
+      <span className="inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full bg-[rgba(136,136,170,.14)] text-[var(--gray-500)]">
+        —
+      </span>
+    )
+  }
+  const pos  = value > 0
+  const Icon = pos ? ArrowUpRight : ArrowDownRight
+  return (
+    <span className={cn(
+      'inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0',
+      pos
+        ? 'bg-[rgba(82,183,136,.14)] text-[var(--status-income)]'
+        : 'bg-[rgba(244,230,226,.8)] text-[var(--status-expense)]',
+    )}>
+      <Icon size={11} />
+      {Math.abs(value)}%
+    </span>
+  )
 }
 
 // ─── Sparkline ───────────────────────────────────────────────────────────────
 
 function Sparkline({ data, color }: { data: number[]; color: string }) {
-  const points = data.map(v => ({ v }))
   return (
-    <ResponsiveContainer width={80} height={40}>
-      <LineChart data={points}>
-        <Line
-          type="monotone"
-          dataKey="v"
-          stroke={color}
-          strokeWidth={2.5}
-          dot={false}
-          animationDuration={600}
-        />
+    <ResponsiveContainer width={88} height={38}>
+      <LineChart data={data.map(v => ({ v }))}>
+        <Line type="monotone" dataKey="v" stroke={color} strokeWidth={2.5} dot={false} animationDuration={600} />
       </LineChart>
     </ResponsiveContainer>
   )
 }
 
-// ─── View Dropdown ────────────────────────────────────────────────────────────
+// ─── Period filter (segmented + popover) ─────────────────────────────────────
 
-const VIEW_OPTIONS: {
-  value:    View
-  label:    string
-  sublabel: string
-  icon:     React.ElementType
-  soon?:    boolean
-}[] = [
-  { value: 'all',     label: 'Visão geral',        sublabel: 'Todas as transações',      icon: Landmark },
-  { value: 'fatura',  label: 'Cartão de crédito',  sublabel: 'Importações via fatura',   icon: CreditCard },
-  { value: 'extrato', label: 'Extrato bancário',   sublabel: 'Importações via extrato',  icon: Landmark },
+interface PeriodFilterProps {
+  period:    Period
+  fromDate:  string
+  toDate:    string
+  onPeriod:  (p: Exclude<Period, 'custom'>) => void
+  onCustom:  (from: string, to: string) => void
+}
+
+const PRESET_PILLS: { key: Exclude<Period, 'custom'>; label: string }[] = [
+  { key: 'today', label: 'Hoje'   },
+  { key: 'week',  label: 'Semana' },
+  { key: 'month', label: 'Mês'    },
+  { key: 'year',  label: 'Ano'    },
 ]
 
-const SOON_OPTIONS = [
-  { label: 'Banco do Brasil',  sublabel: 'Integração bancária' },
-  { label: 'PicPay',           sublabel: 'Integração bancária' },
-  { label: 'Bradesco',         sublabel: 'Integração bancária' },
-  { label: 'Santander',        sublabel: 'Integração bancária' },
-]
-
-function ViewDropdown({ view, onChange }: { view: View; onChange: (v: View) => void }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+function PeriodFilter({ period, onPeriod, onCustom }: PeriodFilterProps) {
+  const [open,      setOpen]      = useState(false)
+  const [mode,      setMode]      = useState<CustomMode>('interval')
+  const [localFrom, setLocalFrom] = useState('')
+  const [localTo,   setLocalTo]   = useState('')
+  const popRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (!open) return
     function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (!popRef.current?.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  }, [open])
 
-  const current = VIEW_OPTIONS.find(o => o.value === view)!
+  const todayStr = new Date().toISOString().slice(0, 10)
+
+  function applyShortcut(kind: 7 | 30 | 'quarter') {
+    const to   = new Date()
+    const from = new Date()
+    if (kind === 'quarter') {
+      const qStart = Math.floor(from.getMonth() / 3) * 3
+      from.setMonth(qStart, 1)
+    } else {
+      from.setDate(from.getDate() - kind + 1)
+    }
+    setLocalFrom(from.toISOString().slice(0, 10))
+    setLocalTo(to.toISOString().slice(0, 10))
+    setMode('interval')
+  }
+
+  function handleApply() {
+    let from = localFrom
+    let to   = localTo
+    if (mode === 'day') {
+      to = from
+    } else if (mode === 'week' && from) {
+      const d = new Date(from + 'T12:00:00')
+      from = startOfWeek(d, { weekStartsOn: 0 }).toISOString().slice(0, 10)
+      to   = endOfWeek(d,   { weekStartsOn: 0 }).toISOString().slice(0, 10)
+    }
+    if (from) {
+      onCustom(from, to || from)
+      setOpen(false)
+    }
+  }
+
+  const MODE_CONFIG: { key: CustomMode; label: string; Icon: React.ElementType }[] = [
+    { key: 'day',      label: 'Dia',       Icon: Calendar      },
+    { key: 'week',     label: 'Semana',    Icon: CalendarDays  },
+    { key: 'interval', label: 'Intervalo', Icon: CalendarRange },
+  ]
 
   return (
-    <div ref={ref} className="relative">
-      {/* Trigger */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        className={cn(
-          'flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all',
-          open
-            ? 'bg-[var(--gray-100)] border-[var(--gray-400)] text-[var(--gray-900)]'
-            : 'border-[var(--gray-300)] text-[var(--gray-600)] hover:bg-[var(--gray-100)] hover:border-[var(--gray-400)]'
-        )}
-      >
-        <current.icon size={14} className="shrink-0" />
-        <span>{current.label}</span>
-        <ChevronDown size={13} className={cn('transition-transform duration-200', open && 'rotate-180')} />
-      </button>
+    <div className="relative" ref={popRef}>
+      {/* Segmented control */}
+      <div className="flex items-center gap-0.5 p-1 rounded-[13px] bg-[rgba(255,255,255,.5)] border border-[var(--gray-300)]">
+        {PRESET_PILLS.map(p => (
+          <button
+            key={p.key}
+            onClick={() => onPeriod(p.key)}
+            className={cn(
+              'px-3 py-1.5 rounded-[9px] text-[12.5px] font-medium transition-all',
+              period === p.key
+                ? 'bg-[var(--gray-900)] text-white shadow-sm'
+                : 'text-[var(--gray-600)] hover:text-[var(--gray-900)]',
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+        <div className="w-px self-stretch mx-0.5 bg-[rgba(26,26,46,.12)]" />
+        <button
+          onClick={() => setOpen(v => !v)}
+          className={cn(
+            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] text-[12.5px] font-medium transition-all',
+            period === 'custom' || open
+              ? 'bg-[var(--gray-900)] text-white shadow-sm'
+              : 'text-[var(--gray-600)] hover:text-[var(--gray-900)]',
+          )}
+        >
+          <CalendarRange size={13} />
+          <span>Personalizado</span>
+        </button>
+      </div>
 
-      {/* Dropdown panel */}
+      {/* Popover */}
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-64 z-50 rounded-2xl border border-[var(--gray-300)] bg-white/[0.97] backdrop-blur-xl shadow-[0_16px_48px_rgba(26,26,46,0.14)] overflow-hidden">
-
-          {/* Available views */}
-          <div className="p-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-400)] px-2 py-1.5">
-              Visualizações
-            </p>
-            {VIEW_OPTIONS.map(opt => {
-              const isActive = view === opt.value
-              const Icon = opt.icon
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => { onChange(opt.value); setOpen(false) }}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-2 py-2.5 rounded-xl text-left transition-colors group',
-                    isActive ? 'bg-[var(--gray-900)]' : 'hover:bg-[var(--gray-100)]'
-                  )}
-                >
-                  <div className={cn(
-                    'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
-                    isActive ? 'bg-white/20' : 'bg-[var(--gray-100)] group-hover:bg-[var(--gray-200)]'
-                  )}>
-                    <Icon size={13} className={isActive ? 'text-white' : 'text-[var(--gray-600)]'} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={cn('text-xs font-semibold', isActive ? 'text-white' : 'text-[var(--gray-900)]')}>
-                      {opt.label}
-                    </p>
-                    <p className={cn('text-[10px]', isActive ? 'text-white/70' : 'text-[var(--gray-400)]')}>
-                      {opt.sublabel}
-                    </p>
-                  </div>
-                  {isActive && <Check size={13} className="text-white shrink-0" />}
-                </button>
-              )
-            })}
+        <div className="glass-popover absolute top-[calc(100%+10px)] right-0 z-50 w-[316px] p-4 rounded-[18px]">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3.5">
+            <span className="text-[12.5px] font-bold text-[var(--gray-900)] tracking-[-0.01em]">
+              Período personalizado
+            </span>
+            <button
+              onClick={() => setOpen(false)}
+              className="w-6 h-6 rounded-lg grid place-items-center text-[var(--gray-500)] bg-[rgba(255,255,255,.6)] border border-[rgba(200,200,224,.45)] hover:bg-white transition-colors"
+            >
+              <X size={13} />
+            </button>
           </div>
 
-          {/* Divider */}
-          <div className="mx-3 border-t border-[var(--gray-200)]" />
-
-          {/* Coming soon */}
-          <div className="p-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-400)] px-2 py-1.5">
-              Em breve
-            </p>
-            {SOON_OPTIONS.map(opt => (
-              <div
-                key={opt.label}
-                className="flex items-center gap-3 px-2 py-2.5 rounded-xl opacity-50 cursor-not-allowed"
+          {/* Mode chips */}
+          <div className="flex gap-1.5 mb-3.5">
+            {MODE_CONFIG.map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                onClick={() => setMode(key)}
+                className={cn(
+                  'flex-1 inline-flex items-center justify-center gap-1.5 text-[11.5px] font-semibold py-2 px-1.5 rounded-[10px] border transition-all',
+                  mode === key
+                    ? 'bg-[var(--gray-900)] text-white border-[var(--gray-900)]'
+                    : 'text-[var(--gray-600)] bg-[rgba(255,255,255,.5)] border-[rgba(200,200,224,.5)] hover:bg-[rgba(255,255,255,.85)]',
+                )}
               >
-                <div className="w-7 h-7 rounded-lg bg-[var(--gray-100)] flex items-center justify-center shrink-0">
-                  <Landmark size={13} className="text-[var(--gray-400)]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-[var(--gray-700)]">{opt.label}</p>
-                  <p className="text-[10px] text-[var(--gray-400)]">{opt.sublabel}</p>
-                </div>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--gray-200)] text-[var(--gray-500)] uppercase tracking-wider shrink-0">
-                  Em breve
-                </span>
-              </div>
+                <Icon size={13} />
+                {label}
+              </button>
             ))}
+          </div>
+
+          {/* Date fields */}
+          <div className={cn('grid gap-2.5', mode === 'interval' ? 'grid-cols-2' : 'grid-cols-1')}>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-[.08em] text-[var(--gray-500)]">
+                {mode === 'interval' ? 'De' : mode === 'week' ? 'Semana de' : 'Data'}
+              </span>
+              <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[11px] bg-[rgba(255,255,255,.72)] border border-[var(--gray-300)] focus-within:border-[var(--gray-500)] focus-within:ring-2 focus-within:ring-[rgba(136,136,170,.16)] transition-all">
+                <Calendar size={13} className="text-[var(--gray-500)] shrink-0" />
+                <input
+                  type="date"
+                  value={localFrom}
+                  max={todayStr}
+                  onChange={e => setLocalFrom(e.target.value)}
+                  className="border-0 bg-transparent outline-none text-[12.5px] font-semibold text-[var(--gray-900)] w-full [color-scheme:light]"
+                />
+              </div>
+            </label>
+            {mode === 'interval' && (
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-[.08em] text-[var(--gray-500)]">Até</span>
+                <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-[11px] bg-[rgba(255,255,255,.72)] border border-[var(--gray-300)] focus-within:border-[var(--gray-500)] focus-within:ring-2 focus-within:ring-[rgba(136,136,170,.16)] transition-all">
+                  <Calendar size={13} className="text-[var(--gray-500)] shrink-0" />
+                  <input
+                    type="date"
+                    value={localTo}
+                    min={localFrom}
+                    max={todayStr}
+                    onChange={e => setLocalTo(e.target.value)}
+                    className="border-0 bg-transparent outline-none text-[12.5px] font-semibold text-[var(--gray-900)] w-full [color-scheme:light]"
+                  />
+                </div>
+              </label>
+            )}
+          </div>
+
+          {/* Quick shortcuts */}
+          <div className="mt-3.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[.08em] text-[var(--gray-500)]">Atalhos</span>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {([
+                { label: 'Últimos 7 dias',  kind: 7   },
+                { label: 'Últimos 30 dias', kind: 30  },
+                { label: 'Este trimestre',  kind: 'quarter' },
+              ] as { label: string; kind: 7 | 30 | 'quarter' }[]).map(s => (
+                <button
+                  key={s.label}
+                  onClick={() => applyShortcut(s.kind)}
+                  className="text-[11px] font-semibold text-[var(--gray-700)] bg-[rgba(255,255,255,.55)] border border-[rgba(200,200,224,.5)] rounded-full px-3 py-1.5 hover:bg-white hover:text-[var(--gray-900)] hover:border-[var(--gray-400)] transition-all"
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex gap-2 mt-4 pt-3.5 border-t border-[rgba(200,200,224,.4)]">
+            <button
+              onClick={() => setOpen(false)}
+              className="px-3.5 py-2 text-[12.5px] font-semibold text-[var(--gray-600)] hover:text-[var(--gray-900)] hover:bg-[rgba(255,255,255,.6)] rounded-[10px] transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleApply}
+              className="flex-1 py-2 text-[12.5px] font-semibold text-white bg-[var(--gray-900)] rounded-[11px] shadow-[0_4px_14px_rgba(26,26,46,.28)] hover:shadow-[0_8px_20px_rgba(26,26,46,.34)] hover:-translate-y-px transition-all"
+            >
+              Aplicar período
+            </button>
           </div>
         </div>
       )}
@@ -218,92 +353,199 @@ function ViewDropdown({ view, onChange }: { view: View; onChange: (v: View) => v
   )
 }
 
-// ─── Greeting card ───────────────────────────────────────────────────────────
+// ─── Balance hero ─────────────────────────────────────────────────────────────
 
-function GreetingCard({
-  firstName, balance, loading,
-}: { firstName: string; balance?: number; loading: boolean }) {
-  const initials = firstName.slice(0, 2).toUpperCase()
+function BalanceHero({ balance, variation, monthlyEvolution, loading }: {
+  balance?:          number
+  variation?:        number
+  monthlyEvolution:  MonthItem[]
+  loading:           boolean
+}) {
   const isNeg    = typeof balance === 'number' && balance < 0
+  const areaData = monthlyEvolution.map(m => ({ label: m.label, value: m.income - m.expense }))
 
   return (
-    <div className="glass-card p-5 flex flex-col justify-between gap-5 min-h-[148px]">
-      <div className="flex items-center justify-between">
-        <div className="w-10 h-10 rounded-full bg-[var(--gray-800)] flex items-center justify-center text-white font-bold text-sm shrink-0">
-          {initials}
+    <div className="glass-card p-6 flex flex-col min-h-[210px]">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[.14em] text-[var(--gray-500)]">Saldo total</p>
+          {loading ? (
+            <div className="skeleton h-11 w-44 rounded-lg mt-2.5" />
+          ) : (
+            <div className="mt-2">
+              <CurrencyDisplay value={balance ?? 0} type={isNeg ? 'expense' : 'income'} size="xl" />
+            </div>
+          )}
+          {!loading && typeof variation === 'number' && (
+            <div className="flex items-center gap-2.5 mt-2.5 flex-wrap">
+              <TrendBadge value={variation} />
+              <span className="text-[12px] text-[var(--gray-500)]">vs. mês anterior · atualizado hoje</span>
+            </div>
+          )}
         </div>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)]">
-          Saldo total
-        </span>
+        <div
+          className="w-[38px] h-[38px] rounded-xl grid place-items-center shrink-0"
+          style={{ background: 'rgba(82,183,136,.16)', border: '1px solid rgba(82,183,136,.3)' }}
+        >
+          <Wallet size={19} className="text-[var(--green-income)]" />
+        </div>
       </div>
 
-      <div>
-        <p className="text-sm text-[var(--gray-500)] mb-1.5">Olá, {firstName} 👋</p>
+      {/* Area chart */}
+      <div className="mt-auto pt-4">
         {loading ? (
-          <div className="skeleton h-9 w-40 rounded-lg" />
-        ) : (
-          <CurrencyDisplay
-            value={balance ?? 0}
-            type={isNeg ? 'expense' : 'income'}
-            size="xl"
-          />
-        )}
+          <div className="skeleton h-24 w-full rounded-xl" />
+        ) : areaData.length > 1 ? (
+          <>
+            <ResponsiveContainer width="100%" height={96}>
+              <AreaChart data={areaData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="heroBalanceGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="var(--status-income)" stopOpacity={0.28} />
+                    <stop offset="95%" stopColor="var(--status-income)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="var(--status-income)"
+                  strokeWidth={2.5}
+                  fill="url(#heroBalanceGrad)"
+                  dot={false}
+                  animationDuration={800}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div className="flex justify-between mt-1.5">
+              {monthlyEvolution.map(m => (
+                <span key={m.label} className="text-[10.5px] font-semibold text-[var(--gray-500)]">{m.label}</span>
+              ))}
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   )
 }
 
-// ─── Stat card with sparkline ─────────────────────────────────────────────────
+// ─── Period summary ───────────────────────────────────────────────────────────
 
-function StatCard({
-  label, value, variation, sparkData, type, loading,
-}: {
-  label:     string
-  value?:    number
-  variation?: number
-  sparkData: number[]
-  type:      'income' | 'expense'
-  loading:   boolean
-}) {
-  const color = type === 'income' ? 'var(--status-income)' : 'var(--status-expense)'
-  const isNeg = typeof variation === 'number' && variation < 0
-  const Icon  = type === 'income' ? TrendingUp : TrendingDown
+function PeriodSummary({ summary, monthLabel, loading }: { summary?: Summary; monthLabel: string; loading: boolean }) {
+  const savings    = summary && summary.periodIncome > 0
+    ? Math.max(0, Math.round((summary.periodBalance / summary.periodIncome) * 100))
+    : 0
+  const expensePct = summary && summary.periodIncome > 0
+    ? Math.min(100, (summary.periodExpense / summary.periodIncome) * 100)
+    : 0
 
   return (
-    <div className={cn('p-5 flex flex-col gap-4 min-h-[148px]', type === 'income' ? 'glass-card-income' : 'glass-card-expense')}>
-      {/* Label + badge */}
+    <div className="glass-card p-5 flex flex-col">
+      <p className="text-[11px] font-semibold uppercase tracking-[.12em] text-[var(--gray-500)]">Resumo do período</p>
+      {loading ? (
+        <div className="mt-2 space-y-3">
+          <div className="skeleton h-8 w-36 rounded-lg" />
+          <div className="skeleton h-3 w-48 rounded" />
+          <div className="skeleton h-3 w-full rounded" />
+          <div className="skeleton h-3 w-full rounded" />
+        </div>
+      ) : (
+        <>
+          <div className="mt-2">
+            <CurrencyDisplay
+              value={summary?.periodBalance ?? 0}
+              type={(summary?.periodBalance ?? 0) >= 0 ? 'income' : 'expense'}
+              size="lg"
+            />
+          </div>
+          <p className="text-[11px] text-[var(--gray-500)] mt-1.5">
+            Saldo de {monthLabel} · sobrou {savings}% da renda
+          </p>
+
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-[9px] h-[9px] rounded-[3px] bg-[var(--status-income)] shrink-0" />
+                <span className="text-[12.5px] text-[var(--gray-700)]">Receitas</span>
+              </div>
+              <span className="text-[13px] font-bold font-[var(--font-mono)] text-[var(--status-income)]">
+                {fmt(summary?.periodIncome ?? 0)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-[9px] h-[9px] rounded-[3px] bg-[var(--status-expense)] shrink-0" />
+                <span className="text-[12.5px] text-[var(--gray-700)]">Despesas</span>
+              </div>
+              <span className="text-[13px] font-bold font-[var(--font-mono)] text-[var(--status-expense)]">
+                {fmt(summary?.periodExpense ?? 0)}
+              </span>
+            </div>
+          </div>
+
+          {/* Proportional bar */}
+          {(summary?.periodIncome ?? 0) > 0 && (
+            <div className="mt-4 h-2 rounded-full bg-[rgba(26,26,46,.07)] overflow-hidden flex">
+              <div
+                className="h-full bg-[var(--status-expense)] transition-[width] duration-[1100ms] ease-[cubic-bezier(.22,1,.36,1)]"
+                style={{ width: `${expensePct.toFixed(1)}%` }}
+              />
+              <div
+                className="h-full bg-[var(--status-income)] opacity-50 transition-[width] duration-[1100ms] ease-[cubic-bezier(.22,1,.36,1)]"
+                style={{ width: `${(100 - expensePct).toFixed(1)}%` }}
+              />
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// ─── KPI card (receitas / despesas) ──────────────────────────────────────────
+
+function KPICard({ label, value, variation, sparkData, type, since, loading }: {
+  label:      string
+  value?:     number
+  variation?: number
+  sparkData:  number[]
+  type:       'income' | 'expense'
+  since:      string
+  loading:    boolean
+}) {
+  const isIncome  = type === 'income'
+  const color     = isIncome ? 'var(--status-income)' : 'var(--status-expense)'
+  const chipBg    = isIncome ? 'rgba(82,183,136,.16)' : 'rgba(224,122,95,.14)'
+  const Icon      = isIncome ? ArrowUpRight : ArrowDownLeft
+  const cardClass = isIncome ? 'glass-card-income' : 'glass-card-expense'
+
+  return (
+    <div className={cn(cardClass, 'p-5 flex flex-col justify-between min-h-[128px]')}>
+      {/* Top: icon + label + trend badge */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: color + '22' }}>
-            <Icon size={16} style={{ color }} />
+          <div
+            className="w-[34px] h-[34px] rounded-[11px] grid place-items-center shrink-0"
+            style={{ background: chipBg }}
+          >
+            <Icon size={17} style={{ color }} />
           </div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--gray-500)]">{label}</p>
+          <span className="text-[11px] font-semibold uppercase tracking-[.1em] text-[var(--gray-500)]">{label}</span>
         </div>
-        {typeof variation === 'number' && !loading && (
-          <span className={cn(
-            'flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0',
-            isNeg
-              ? 'bg-[rgba(244,230,226,0.8)] text-[var(--status-expense)]'
-              : 'bg-[var(--green-frost)] text-[var(--status-income)]'
-          )}>
-            {isNeg ? <TrendingDown size={10} /> : <TrendingUp size={10} />}
-            {Math.abs(variation)}%
-          </span>
-        )}
+        {typeof variation === 'number' && !loading && <TrendBadge value={variation} />}
       </div>
 
-      {/* Value + sparkline */}
+      {/* Bottom: value + sublabel + sparkline */}
       <div className="flex items-end justify-between gap-2">
         <div>
           {loading ? (
-            <div className="skeleton h-8 w-28 rounded-lg" />
+            <div className="skeleton h-7 w-28 rounded-lg" />
           ) : (
             <CurrencyDisplay value={value ?? 0} type={type} size="lg" />
           )}
-          <p className="text-[10px] text-[var(--gray-500)] mt-1">Este período</p>
+          <p className="text-[10.5px] text-[var(--gray-500)] mt-1">{since}</p>
         </div>
         {!loading && sparkData.length > 1 && (
-          <div className="shrink-0 opacity-80">
+          <div className="shrink-0 opacity-90">
             <Sparkline data={sparkData} color={color} />
           </div>
         )}
@@ -312,274 +554,323 @@ function StatCard({
   )
 }
 
-// ─── Transactions table ───────────────────────────────────────────────────────
+// ─── Savings card ─────────────────────────────────────────────────────────────
 
-function TransactionsTable({
-  transactions, loading,
-}: { transactions: RecentTransaction[]; loading: boolean }) {
+function SavingsCard({ rate, variation, loading }: { rate: number; variation?: number; loading: boolean }) {
   return (
-    <div className="glass-card overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--gray-300)]">
+    <div className="glass-card p-5 flex flex-col justify-between min-h-[128px]">
+      {/* Top: icon + label + trend badge */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-[34px] h-[34px] rounded-[11px] grid place-items-center shrink-0"
+            style={{ background: 'rgba(123,159,199,.16)' }}
+          >
+            <PiggyBank size={17} style={{ color: 'var(--status-info)' }} />
+          </div>
+          <span className="text-[11px] font-semibold uppercase tracking-[.1em] text-[var(--gray-500)]">Taxa de economia</span>
+        </div>
+        {typeof variation === 'number' && !loading && <TrendBadge value={variation} />}
+      </div>
+
+      {/* Bottom: value + sublabel — mesma estrutura dos KPICards */}
+      <div className="flex items-end justify-between gap-2">
         <div>
-          <h3 className="text-sm font-semibold text-[var(--gray-900)]">Últimas Transações</h3>
-          <p className="text-xs text-[var(--gray-500)] mt-0.5">Movimentações recentes da conta</p>
+          {loading ? (
+            <div className="skeleton h-7 w-20 rounded-lg" />
+          ) : (
+            <p className="text-[25px] font-[var(--font-mono)] font-bold text-[var(--gray-900)] leading-none">
+              {rate}%
+            </p>
+          )}
+          <p className="text-[10.5px] text-[var(--gray-500)] mt-1">da renda guardada</p>
         </div>
-        <Link
-          href="/transactions"
-          className="flex items-center gap-1 text-xs font-semibold text-[var(--gray-700)] hover:text-[var(--gray-900)] transition-colors"
-        >
-          Ver todas <ArrowRight size={12} />
-        </Link>
       </div>
-
-      {/* Column headers */}
-      <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-2.5 border-b border-[var(--gray-300)]/60 bg-[var(--gray-100)]/60">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)]">Descrição</p>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)] hidden sm:block">Categoria</p>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)] hidden sm:block">Data</p>
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--gray-500)] text-right">Valor</p>
-      </div>
-
-      {/* Rows */}
-      {loading ? (
-        <div className="divide-y divide-[var(--gray-300)]/40">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 items-center px-5 py-3.5">
-              <div className="flex items-center gap-3">
-                <div className="skeleton w-8 h-8 rounded-xl shrink-0" />
-                <div className="skeleton h-3 w-32 rounded" />
-              </div>
-              <div className="skeleton h-3 w-20 rounded hidden sm:block" />
-              <div className="skeleton h-3 w-20 rounded hidden sm:block" />
-              <div className="skeleton h-3 w-16 rounded justify-self-end" />
-            </div>
-          ))}
-        </div>
-      ) : transactions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-14 gap-2 text-[var(--gray-500)]">
-          <Receipt size={32} strokeWidth={1.5} />
-          <p className="text-sm">Nenhuma transação ainda</p>
-          <Link href="/transactions" className="text-xs font-semibold text-[var(--gray-700)] hover:underline mt-1">
-            Adicionar transação
-          </Link>
-        </div>
-      ) : (
-        <div className="divide-y divide-[var(--gray-300)]/40">
-          {transactions.map(tx => {
-            const isIncome = tx.type === 'INCOME'
-            const Icon     = tx.category ? getLucideIcon(tx.category.icon) : Tag
-            return (
-              <div
-                key={tx.id}
-                className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 items-center px-5 py-3.5 hover:bg-[var(--gray-100)] transition-colors"
-              >
-                {/* Description + icon */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                    style={tx.category
-                      ? { background: tx.category.color + '22', border: `1.5px solid ${tx.category.color}` }
-                      : { background: 'var(--gray-100)', border: '1.5px solid var(--gray-300)' }
-                    }
-                  >
-                    <Icon size={14} style={{ color: tx.category?.color ?? 'var(--gray-500)' }} />
-                  </div>
-                  <span className="text-sm font-medium text-[var(--gray-900)] truncate">{tx.description}</span>
-                </div>
-
-                {/* Category */}
-                <span className="hidden sm:block text-xs text-[var(--gray-500)] whitespace-nowrap">
-                  {tx.category?.name ?? 'Outros'}
-                </span>
-
-                {/* Date */}
-                <span className="hidden sm:block text-xs text-[var(--gray-500)] whitespace-nowrap">
-                  {formatDate(tx.date)}
-                </span>
-
-                {/* Amount */}
-                <div className="justify-self-end">
-                  <CurrencyDisplay
-                    value={tx.amount}
-                    type={isIncome ? 'income' : 'expense'}
-                    size="sm"
-                    showSign
-                  />
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
     </div>
   )
 }
 
-// ─── Right panel ─────────────────────────────────────────────────────────────
+// ─── Donut distribution ───────────────────────────────────────────────────────
 
-function RightPanel({
-  period, onChangePeriod, summary, categories, loading,
-}: {
-  period:          Period
-  onChangePeriod:  (p: Period) => void
-  summary?:        Summary
-  categories:      CategoryItem[]
-  loading:         boolean
-}) {
+function DonutDistrib({ categories, monthLabel, loading }: { categories: CategoryItem[]; monthLabel: string; loading: boolean }) {
+  const total = categories.reduce((s, c) => s + c.total, 0)
+  const top6  = categories.slice(0, 6)
+
   return (
-    <aside className="flex flex-col gap-4">
-      {/* Period selector */}
-      <div className="glass-card p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3">Período</p>
-        <div className="space-y-1">
-          {PERIODS.map(p => (
-            <button
-              key={p.key}
-              onClick={() => onChangePeriod(p.key)}
-              className={cn(
-                'w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all',
-                period === p.key
-                  ? 'bg-[var(--gray-900)] text-white shadow-sm'
-                  : 'text-[var(--gray-700)] hover:bg-[var(--gray-100)]'
-              )}
-            >
-              {p.label}
-            </button>
-          ))}
+    <div className="glass-card flex flex-col overflow-hidden">
+      <div className="flex items-start justify-between px-5 py-4 pb-2">
+        <div>
+          <h3 className="text-[14px] font-semibold text-[var(--gray-900)]">Distribuição de gastos</h3>
+          <p className="text-[11.5px] text-[var(--gray-500)] mt-0.5">
+            {categories.length > 0 ? `${categories.length} categorias · ${monthLabel}` : 'Nenhuma despesa'}
+          </p>
         </div>
       </div>
 
-      {/* Period balance summary */}
-      <div className="glass-card p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3">
-          Resumo do período
-        </p>
+      <div className="flex flex-col items-center px-5 pb-5">
         {loading ? (
-          <div className="space-y-3">
-            <div className="skeleton h-8 w-36 rounded-lg" />
-            <div className="skeleton h-3 w-full rounded" />
-            <div className="skeleton h-3 w-full rounded" />
+          <div className="flex flex-col items-center gap-4 w-full py-4">
+            <div className="skeleton w-[176px] h-[176px] rounded-full" />
+            <div className="grid grid-cols-2 gap-2.5 w-full">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton h-3 rounded" />
+              ))}
+            </div>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="flex flex-col items-center py-10 gap-2 text-[var(--gray-500)]">
+            <LucideIcons.PieChart size={32} strokeWidth={1.5} className="text-[var(--gray-300)]" />
+            <p className="text-xs">Nenhuma despesa no período</p>
           </div>
         ) : (
           <>
-            <CurrencyDisplay
-              value={summary?.periodBalance ?? 0}
-              type={(summary?.periodBalance ?? 0) >= 0 ? 'income' : 'expense'}
-              size="lg"
-            />
-            <div className="mt-3 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[var(--status-income)]" />
-                  <span className="text-xs text-[var(--gray-500)]">Receitas</span>
-                </div>
-                <span className="text-xs font-semibold text-[var(--status-income)]">
-                  {fmt(summary?.periodIncome ?? 0)}
-                </span>
+            {/* Donut */}
+            <div className="relative w-[176px] h-[176px] my-1.5">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPieChart>
+                  <Pie
+                    data={top6}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={74}
+                    outerRadius={94}
+                    paddingAngle={2}
+                    dataKey="total"
+                    animationDuration={600}
+                    animationBegin={0}
+                  >
+                    {top6.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} stroke="transparent" />
+                    ))}
+                  </Pie>
+                </RechartsPieChart>
+              </ResponsiveContainer>
+              {/* Center label */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-[9.5px] font-semibold uppercase tracking-[.12em] text-[var(--gray-500)]">Gastos</p>
+                <p className="text-[21px] font-[var(--font-mono)] font-bold text-[var(--status-expense)] tabular-nums leading-tight mt-0.5">
+                  {fmt(total)}
+                </p>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[var(--status-expense)]" />
-                  <span className="text-xs text-[var(--gray-500)]">Despesas</span>
-                </div>
-                <span className="text-xs font-semibold text-[var(--status-expense)]">
-                  {fmt(summary?.periodExpense ?? 0)}
-                </span>
-              </div>
+            </div>
 
-              {/* Progress bar */}
-              {(summary?.periodIncome ?? 0) > 0 && (
-                <div className="mt-1 h-1.5 rounded-full bg-[var(--gray-200)] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[var(--status-expense)] transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, ((summary?.periodExpense ?? 0) / (summary?.periodIncome ?? 1)) * 100).toFixed(1)}%`
-                    }}
+            {/* Legend */}
+            <div className="grid grid-cols-2 gap-x-3.5 gap-y-2.5 w-full mt-2">
+              {top6.map(cat => (
+                <div key={cat.categoryId ?? cat.name} className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-[9px] h-[9px] rounded-[3px] shrink-0"
+                    style={{ background: cat.color }}
                   />
+                  <span className="text-[12px] text-[var(--gray-700)] flex-1 truncate">{cat.name}</span>
+                  <span className="text-[11.5px] font-bold font-[var(--font-mono)] text-[var(--gray-700)] shrink-0">
+                    {cat.percentage}%
+                  </span>
                 </div>
-              )}
+              ))}
             </div>
           </>
         )}
       </div>
+    </div>
+  )
+}
 
-      {/* Top categories */}
-      <div className="glass-card p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--gray-500)] mb-3">
-          Top categorias
-        </p>
+// ─── Transaction list ─────────────────────────────────────────────────────────
+
+function TransactionList({ transactions, loading }: { transactions: RecentTransaction[]; loading: boolean }) {
+  return (
+    <div className="glass-card flex flex-col overflow-hidden">
+      <div className="flex items-start justify-between px-5 py-4">
+        <div>
+          <h3 className="text-[14px] font-semibold text-[var(--gray-900)]">Últimas transações</h3>
+          <p className="text-[11.5px] text-[var(--gray-500)] mt-0.5">Movimentações recentes</p>
+        </div>
+        <Link
+          href="/transactions"
+          className="flex items-center gap-1 text-[12px] font-semibold text-[var(--gray-700)] hover:text-[var(--gray-900)] transition-colors shrink-0"
+        >
+          Ver todas <ArrowRight size={13} />
+        </Link>
+      </div>
+
+      <div className="px-2 pb-2">
         {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="skeleton w-5 h-5 rounded-lg" />
-                <div className="skeleton h-3 flex-1 rounded" />
-                <div className="skeleton h-3 w-8 rounded" />
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-[40px_1fr_auto] gap-3 items-center px-3 py-3">
+              <div className="skeleton w-10 h-10 rounded-[13px]" />
+              <div className="space-y-1.5">
+                <div className="skeleton h-3 w-32 rounded" />
+                <div className="skeleton h-2.5 w-24 rounded" />
               </div>
-            ))}
+              <div className="skeleton h-4 w-16 rounded" />
+            </div>
+          ))
+        ) : transactions.length === 0 ? (
+          <div className="flex flex-col items-center py-10 gap-2 text-[var(--gray-500)]">
+            <Receipt size={32} strokeWidth={1.5} />
+            <p className="text-sm">Nenhuma transação ainda</p>
+            <Link href="/transactions" className="text-xs font-semibold text-[var(--gray-700)] hover:underline mt-1">
+              Adicionar transação
+            </Link>
           </div>
-        ) : categories.length === 0 ? (
-          <p className="text-xs text-[var(--gray-500)] text-center py-2">Nenhuma despesa</p>
         ) : (
-          <div className="space-y-2.5">
-            {categories.slice(0, 5).map(cat => {
-              const Icon = getLucideIcon(cat.icon)
-              return (
-                <div key={cat.categoryId ?? cat.name} className="flex items-center gap-2">
-                  <div
-                    className="w-5 h-5 rounded-lg shrink-0 flex items-center justify-center"
-                    style={{ background: cat.color + '22' }}
-                  >
-                    <Icon size={11} style={{ color: cat.color }} />
-                  </div>
-                  <span className="text-xs text-[var(--gray-700)] flex-1 truncate">{cat.name}</span>
-                  <span className="text-xs font-semibold text-[var(--gray-900)] shrink-0">
-                    {cat.percentage}%
-                  </span>
+          transactions.map(tx => {
+            const isIncome = tx.type === 'INCOME'
+            const Icon     = tx.category ? getLucideIcon(tx.category.icon) : Tag
+            const catColor = tx.category?.color ?? 'var(--gray-400)'
+            return (
+              <div
+                key={tx.id}
+                className="grid grid-cols-[40px_1fr_auto] gap-3 items-center px-3 py-2.5 rounded-2xl hover:bg-white/55 transition-colors"
+              >
+                <div
+                  className="w-10 h-10 rounded-[13px] grid place-items-center shrink-0"
+                  style={{ background: catColor + '1f', border: `1.5px solid ${catColor}` }}
+                >
+                  <Icon size={18} style={{ color: catColor }} />
                 </div>
-              )
-            })}
-          </div>
+                <div className="min-w-0">
+                  <p className="text-[13.5px] font-semibold text-[var(--gray-900)] truncate">{tx.description}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[11.5px] text-[var(--gray-500)]">{tx.category?.name ?? 'Outros'}</span>
+                    <span className="w-[3px] h-[3px] rounded-full bg-[var(--gray-400)] shrink-0" />
+                    <span className="text-[11.5px] text-[var(--gray-500)]">{formatDate(tx.date)}</span>
+                  </div>
+                </div>
+                <CurrencyDisplay
+                  value={tx.amount}
+                  type={isIncome ? 'income' : 'expense'}
+                  size="sm"
+                  showSign
+                />
+              </div>
+            )
+          })
         )}
       </div>
-    </aside>
+    </div>
+  )
+}
+
+// ─── Bar chart card ───────────────────────────────────────────────────────────
+
+function BarTooltip({ active, payload, label }: {
+  active?:  boolean
+  payload?: { name: string; value: number; color: string }[]
+  label?:   string
+}) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="glass-card px-4 py-3 text-sm shadow-[0_16px_40px_rgba(26,26,46,0.12)]">
+      <p className="font-semibold text-[var(--gray-900)] mb-2">{label}</p>
+      {payload.map(p => (
+        <div key={p.name} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+          <span className="text-[var(--gray-700)]">{p.name}:</span>
+          <span className="font-[var(--font-mono)] font-semibold" style={{ color: p.color }}>
+            {fmt(p.value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function BarChartCard({ data, loading }: { data: MonthItem[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="glass-card p-5">
+        <div className="skeleton h-5 w-44 rounded mb-1" />
+        <div className="skeleton h-3.5 w-28 rounded mb-5" />
+        <div className="skeleton h-[170px] rounded-xl" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="glass-card">
+      <div className="flex items-start justify-between px-5 pt-4 pb-0">
+        <div>
+          <h3 className="text-[14px] font-semibold text-[var(--gray-900)]">Receitas e despesas</h3>
+          <p className="text-[11.5px] text-[var(--gray-500)] mt-0.5">Últimos 6 meses</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--status-income)]" />
+            <span className="text-[11.5px] font-medium text-[var(--gray-600)]">Receitas</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-[3px] bg-[var(--status-expense)]" />
+            <span className="text-[11.5px] font-medium text-[var(--gray-600)]">Despesas</span>
+          </div>
+        </div>
+      </div>
+      <div className="px-5 pb-4 pt-3.5">
+        <ResponsiveContainer width="100%" height={170}>
+          <BarChart data={data} barCategoryGap="30%" barGap={3} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <CartesianGrid vertical={false} stroke="rgba(26,26,46,.07)" strokeDasharray="" />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 11, fill: 'var(--gray-500)', fontFamily: 'var(--font-inter)', fontWeight: 600 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(200,200,224,.20)', radius: 8 }} />
+            <Bar dataKey="income"  name="Receitas" fill="var(--status-income)"  radius={[5, 5, 0, 0]} maxBarSize={15} animationDuration={800} animationBegin={0}   />
+            <Bar dataKey="expense" name="Despesas" fill="var(--status-expense)" radius={[5, 5, 0, 0]} maxBarSize={15} animationDuration={800} animationBegin={100} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   )
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function DashboardClient({ firstName }: { firstName: string }) {
-  const [period,  setPeriod]  = useState<Period>('month')
-  const [view,    setView]    = useState<View>('all')
-  const [data,    setData]    = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const searchParams = useSearchParams()
+  const view         = (searchParams.get('view') as View) ?? 'all'
+
+  const [period,   setPeriod]   = useState<Period>('month')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate,   setToDate]   = useState('')
+  const [data,     setData]     = useState<DashboardData | null>(null)
+  const [loading,  setLoading]  = useState(true)
 
   const fetchData = useCallback(async () => {
+    if (period === 'custom' && !fromDate) return
     setLoading(true)
     try {
-      const res  = await fetch(`/api/dashboard?period=${period}&view=${view}`)
+      let url = `/api/dashboard?period=${period}&view=${view}`
+      if (period === 'custom' && fromDate) {
+        url += `&from=${fromDate}&to=${toDate || fromDate}`
+      }
+      const res  = await fetch(url)
       if (!res.ok) throw new Error()
       const json = await res.json()
       setData(json.data)
     } catch { /* keep skeleton */ }
     finally  { setLoading(false) }
-  }, [period, view])
+  }, [period, fromDate, toDate, view])
 
   useEffect(() => { fetchData() }, [fetchData])
 
   const s = data?.summary
 
-  // Sparkline data: income and expense series from monthly evolution
   const incomeSparkData  = (data?.monthlyEvolution ?? []).map(m => m.income)
   const expenseSparkData = (data?.monthlyEvolution ?? []).map(m => m.expense)
+  const savingsRate      = s && s.periodIncome > 0
+    ? Math.max(0, Math.round((s.periodBalance / s.periodIncome) * 100))
+    : 0
+  const monthLabel = getPeriodLabel(period, fromDate)
+  const sinceLabel = getPeriodSince(period, fromDate)
 
-  // ── Render fatura / extrato view ─────────────────────────────────────────────
+  // ── Fatura / extrato view ────────────────────────────────────────────────────
   if (view === 'fatura' || view === 'extrato') {
     return (
       <div className="space-y-5">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
               {view === 'fatura' ? 'Cartão de Crédito' : 'Extrato Bancário'}
@@ -590,26 +881,14 @@ export function DashboardClient({ firstName }: { firstName: string }) {
                 : 'Movimentações importadas via extrato da conta'}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Period pills */}
-            <div className="hidden sm:flex gap-1 p-1 rounded-xl bg-[var(--gray-100)] border border-[var(--gray-300)]">
-              {PERIODS.map(p => (
-                <button
-                  key={p.key}
-                  onClick={() => setPeriod(p.key)}
-                  className={cn(
-                    'px-2.5 py-1 rounded-lg text-xs font-medium transition-all',
-                    period === p.key
-                      ? 'bg-[var(--gray-900)] text-white shadow-sm'
-                      : 'text-[var(--gray-600)] hover:text-[var(--gray-900)]'
-                  )}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-            <ViewDropdown view={view} onChange={setView} />
-          </div>
+
+          <PeriodFilter
+            period={period}
+            fromDate={fromDate}
+            toDate={toDate}
+            onPeriod={p => { setPeriod(p); setFromDate(''); setToDate('') }}
+            onCustom={(from, to) => { setPeriod('custom'); setFromDate(from); setToDate(to) }}
+          />
         </div>
 
         <DashboardFatura
@@ -624,82 +903,87 @@ export function DashboardClient({ firstName }: { firstName: string }) {
     )
   }
 
-  // ── Default (all) view ────────────────────────────────────────────────────────
+  // ── Default (all) view ───────────────────────────────────────────────────────
   return (
-    <div className="flex gap-5 xl:gap-6 items-start">
+    <div className="space-y-4">
 
-      {/* ── Main column ─────────────────────────────────────────── */}
-      <div className="flex-1 min-w-0 space-y-5">
-
-        {/* ── View selector header ──────────────────────────────── */}
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--gray-900)] font-[var(--font-space-grotesk)]">
-              Dashboard
-            </h1>
-          </div>
-          <ViewDropdown view={view} onChange={v => { setView(v) }} />
+      {/* Header */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[13px] text-[var(--gray-500)] mb-0.5">Olá, {firstName} 👋</p>
+          <h1 className="font-[var(--font-display)] font-bold text-[27px] tracking-[-0.02em] text-[var(--gray-900)] leading-tight">
+            Dashboard
+          </h1>
         </div>
-
-        {/* Negative balance alert — RN01 */}
-        {!loading && s && s.balance < 0 && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 border border-red-200">
-            <AlertTriangle size={15} className="text-[var(--status-expense)] shrink-0" />
-            <p className="text-sm text-[var(--status-expense)] font-medium">
-              Seu saldo está negativo. Fique atento às despesas!
-            </p>
-          </div>
-        )}
-
-        {/* Row 1: Greeting + stat cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <GreetingCard firstName={firstName} balance={s?.balance} loading={loading} />
-          <StatCard
-            label="Receitas"
-            value={s?.periodIncome}
-            variation={s?.incomeVariation}
-            sparkData={incomeSparkData}
-            type="income"
-            loading={loading}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <PeriodFilter
+            period={period}
+            fromDate={fromDate}
+            toDate={toDate}
+            onPeriod={p => { setPeriod(p); setFromDate(''); setToDate('') }}
+            onCustom={(from, to) => { setPeriod('custom'); setFromDate(from); setToDate(to) }}
           />
-          <StatCard
-            label="Despesas"
-            value={s?.periodExpense}
-            variation={s?.expenseVariation}
-            sparkData={expenseSparkData}
-            type="expense"
-            loading={loading}
-          />
+          <Link href="/transactions">
+            <button className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-[13px] text-[13.5px] font-semibold text-white bg-[var(--gray-900)] shadow-[0_3px_10px_rgba(26,26,46,.25)] hover:shadow-[0_8px_20px_rgba(26,26,46,.34)] hover:-translate-y-px transition-all">
+              <Plus size={15} />
+              Nova transação
+            </button>
+          </Link>
         </div>
-
-        {/* Row 2: Recent transactions table */}
-        <TransactionsTable
-          transactions={data?.recentTransactions ?? []}
-          loading={loading}
-        />
-
-        {/* Row 3: Balance chart */}
-        {loading ? (
-          <div className="glass-card p-5">
-            <div className="skeleton h-5 w-36 rounded mb-1" />
-            <div className="skeleton h-4 w-24 rounded mb-5" />
-            <div className="skeleton h-52 rounded-xl" />
-          </div>
-        ) : (
-          <BalanceChart data={data?.monthlyEvolution ?? []} />
-        )}
       </div>
 
-      {/* ── Right panel (xl+) ───────────────────────────────────── */}
-      <div className="hidden xl:block w-[220px] shrink-0">
-        <RightPanel
-          period={period}
-          onChangePeriod={setPeriod}
-          summary={s}
-          categories={data?.categoryBreakdown ?? []}
+      {/* Negative balance alert — RN01 */}
+      {!loading && s && s.balance < 0 && (
+        <div className="flex items-center gap-2.5 px-4 py-3 rounded-[14px] bg-[rgba(244,230,226,.7)] border border-[rgba(224,122,95,.4)]">
+          <AlertTriangle size={16} className="text-[var(--status-expense)] shrink-0" />
+          <span className="text-[13px] font-medium text-[var(--status-expense)]">
+            Seu saldo está negativo. Fique atento às despesas!
+          </span>
+        </div>
+      )}
+
+      {/* ROW 1 — hero + summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2.1fr_1fr] gap-4">
+        <BalanceHero
+          balance={s?.balance}
+          variation={s?.balanceVariation}
+          monthlyEvolution={data?.monthlyEvolution ?? []}
           loading={loading}
         />
+        <PeriodSummary summary={s} monthLabel={monthLabel} loading={loading} />
       </div>
+
+      {/* ROW 2 — KPIs */}
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4">
+        <KPICard
+          label="Receitas"
+          value={s?.periodIncome}
+          variation={s?.incomeVariation}
+          sparkData={incomeSparkData}
+          type="income"
+          since={sinceLabel}
+          loading={loading}
+        />
+        <KPICard
+          label="Despesas"
+          value={s?.periodExpense}
+          variation={s?.expenseVariation}
+          sparkData={expenseSparkData}
+          type="expense"
+          since={sinceLabel}
+          loading={loading}
+        />
+        <SavingsCard rate={savingsRate} variation={s?.balanceVariation} loading={loading} />
+      </div>
+
+      {/* ROW 3 — donut + transactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.45fr] gap-4">
+        <DonutDistrib categories={data?.categoryBreakdown ?? []} monthLabel={monthLabel} loading={loading} />
+        <TransactionList transactions={data?.recentTransactions ?? []} loading={loading} />
+      </div>
+
+      {/* ROW 4 — bar chart */}
+      <BarChartCard data={data?.monthlyEvolution ?? []} loading={loading} />
     </div>
   )
 }

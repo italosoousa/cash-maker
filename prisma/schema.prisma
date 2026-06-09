@@ -28,6 +28,7 @@ model User {
   transactions   Transaction[]
   categories     Category[]
   fixedExpenses  FixedExpense[]
+  savingPlans    SavingPlan[]
 
   @@map("users")
 }
@@ -134,6 +135,35 @@ model FixedExpense {
   @@index([userId])
   @@index([isActive, nextDueDate])  // usado pelo cron job
   @@map("fixed_expenses")
+}
+
+// =============================================================================
+// SAVING PLAN
+// Planos de poupança com meta de valor e prazo.
+// =============================================================================
+model SavingPlan {
+  id            String    @id @default(cuid())
+  name          String
+  icon          String    @default("PiggyBank")   // nome do ícone Lucide (PascalCase)
+  color         String    @default("#52B788")      // hex color
+  targetAmount  Decimal   @db.Decimal(12, 2)       // meta total
+  currentAmount Decimal   @db.Decimal(12, 2) @default(0) // quanto já está guardado
+  dueDate       DateTime?                           // prazo opcional
+  notes         String?
+
+  // Soft delete
+  deletedAt     DateTime?
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relações
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saving_plans")
 }
 
 // =============================================================================

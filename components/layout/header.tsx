@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
-import { Search, Bell, LogOut, User, ChevronDown } from 'lucide-react'
+import { Bell, LogOut, User, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface HeaderProps {
@@ -24,23 +24,13 @@ export function Header({ userName, userEmail, pageTitle }: HeaderProps) {
 
   return (
     <header className="header-shell">
-      {/* Título da página (mobile) / Search (desktop) */}
+      {/* Título da página */}
       <div className="flex-1 flex items-center gap-4 min-w-0">
         {pageTitle && (
-          <h1 className="text-base font-semibold text-[var(--gray-900)] md:hidden truncate">
+          <h1 className="text-base font-semibold text-[var(--gray-900)] truncate">
             {pageTitle}
           </h1>
         )}
-
-        {/* Barra de busca — desktop */}
-        <div className="hidden md:flex flex-1 max-w-sm items-center gap-2 bg-white/70 border border-[var(--gray-300)] rounded-xl px-3 py-2 focus-within:border-[var(--gray-500)] focus-within:shadow-[0_0_0_3px_rgba(136,136,170,0.12)] transition-all shadow-sm">
-          <Search size={15} className="shrink-0 text-[var(--gray-500)]" />
-          <input
-            type="search"
-            placeholder="Buscar transações..."
-            className="flex-1 bg-transparent outline-none text-[var(--gray-900)] placeholder:text-[var(--gray-500)] text-sm"
-          />
-        </div>
       </div>
 
       {/* Ações */}

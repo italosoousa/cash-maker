@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Upload, FileSpreadsheet, ArrowRight, CreditCard, Landmark, X, Loader2, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -15,80 +16,7 @@ interface Bank {
   description: string
   brand:       string        // cor principal
   accent:      string        // cor secundária / destaque
-  logo:        React.ReactNode
-}
-
-function NubankLogo() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-      <rect width="48" height="48" rx="14" fill="#820AD1" />
-      <text x="24" y="31" textAnchor="middle" fill="white" fontSize="20" fontWeight="800" fontFamily="system-ui">Nu</text>
-    </svg>
-  )
-}
-
-function BBLogo() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-      <rect width="48" height="48" rx="14" fill="#006BB6" />
-      <circle cx="24" cy="24" r="13" stroke="#FECE00" strokeWidth="3" fill="none" />
-      <text x="24" y="30" textAnchor="middle" fill="#FECE00" fontSize="14" fontWeight="900" fontFamily="system-ui">BB</text>
-    </svg>
-  )
-}
-
-function PicPayLogo() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-      <rect width="48" height="48" rx="14" fill="#21C25E" />
-      <text x="24" y="21" textAnchor="middle" fill="white" fontSize="11" fontWeight="900" fontFamily="system-ui">Pic</text>
-      <text x="24" y="34" textAnchor="middle" fill="white" fontSize="11" fontWeight="900" fontFamily="system-ui">Pay</text>
-    </svg>
-  )
-}
-
-function BradescaLogo() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-      <rect width="48" height="48" rx="14" fill="#CC092F" />
-      <circle cx="24" cy="20" r="7" fill="white" opacity="0.15" />
-      <circle cx="24" cy="20" r="4" fill="white" />
-      <rect x="10" y="29" width="28" height="3" rx="1.5" fill="white" opacity="0.4" />
-      <rect x="14" y="34" width="20" height="3" rx="1.5" fill="white" opacity="0.25" />
-    </svg>
-  )
-}
-
-function SantanderLogo() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-      <rect width="48" height="48" rx="14" fill="#EC0000" />
-      {/* Simplified flame/spark symbol */}
-      <ellipse cx="24" cy="28" rx="10" ry="7" fill="white" opacity="0.20" />
-      <ellipse cx="24" cy="28" rx="6"  ry="4" fill="white" opacity="0.30" />
-      <path d="M24 14 C20 19 17 22 18 27 C19 31 24 33 24 33 C24 33 29 31 30 27 C31 22 28 19 24 14Z" fill="white" />
-    </svg>
-  )
-}
-
-function C6Logo() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-      <rect width="48" height="48" rx="14" fill="#1A1A1A" />
-      <text x="24" y="31" textAnchor="middle" fill="#F5B100" fontSize="20" fontWeight="900" fontFamily="system-ui" letterSpacing="-1">C6</text>
-    </svg>
-  )
-}
-
-function SicoobLogo() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" className="w-full h-full">
-      <rect width="48" height="48" rx="14" fill="#009640" />
-      <path d="M12 24 C12 17.4 17.4 12 24 12 C30.6 12 36 17.4 36 24" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
-      <path d="M16 29 C16 24.6 19.6 21 24 21 C28.4 21 32 24.6 32 29" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.6" />
-      <circle cx="24" cy="34" r="3" fill="white" />
-    </svg>
-  )
+  logo:        string        // caminho da imagem em /public
 }
 
 const BANKS: Bank[] = [
@@ -98,7 +26,7 @@ const BANKS: Bank[] = [
     description: 'Extrato em CSV',
     brand:       '#820AD1',
     accent:      '#B66AE8',
-    logo:        <NubankLogo />,
+    logo:        '/banks/nubank.jpg',
   },
   {
     id:          'banco-do-brasil',
@@ -106,7 +34,7 @@ const BANKS: Bank[] = [
     description: 'Extrato em CSV / OFX',
     brand:       '#006BB6',
     accent:      '#FECE00',
-    logo:        <BBLogo />,
+    logo:        '/banks/banco-do-brasil.png',
   },
   {
     id:          'picpay',
@@ -114,7 +42,7 @@ const BANKS: Bank[] = [
     description: 'Extrato em CSV',
     brand:       '#21C25E',
     accent:      '#16A34A',
-    logo:        <PicPayLogo />,
+    logo:        '/banks/picpay.png',
   },
   {
     id:          'bradesco',
@@ -122,7 +50,7 @@ const BANKS: Bank[] = [
     description: 'Extrato em CSV / OFX',
     brand:       '#CC092F',
     accent:      '#F43F5E',
-    logo:        <BradescaLogo />,
+    logo:        '/banks/bradesco.png',
   },
   {
     id:          'santander',
@@ -130,7 +58,7 @@ const BANKS: Bank[] = [
     description: 'Extrato em CSV / OFX',
     brand:       '#EC0000',
     accent:      '#FF4444',
-    logo:        <SantanderLogo />,
+    logo:        '/banks/santander.png',
   },
   {
     id:          'c6',
@@ -138,15 +66,23 @@ const BANKS: Bank[] = [
     description: 'Extrato em CSV',
     brand:       '#1A1A1A',
     accent:      '#F5B100',
-    logo:        <C6Logo />,
+    logo:        '/banks/c6.png',
   },
   {
-    id:          'sicoob',
-    name:        'Sicoob',
+    id:          'caixa',
+    name:        'Caixa Econômica',
     description: 'Extrato em CSV / OFX',
-    brand:       '#009640',
-    accent:      '#4ADE80',
-    logo:        <SicoobLogo />,
+    brand:       '#0070AE',
+    accent:      '#F37100',
+    logo:        '/banks/caixa.jpg',
+  },
+  {
+    id:          'inter',
+    name:        'Banco Inter',
+    description: 'Extrato em CSV / OFX',
+    brand:       '#FF7A00',
+    accent:      '#FF9E40',
+    logo:        '/banks/inter.jpeg',
   },
 ]
 
@@ -284,9 +220,9 @@ export default function ImportarPage() {
                     <svg viewBox="0 0 12 12" className="w-2.5 h-2.5"><path d="M2 6L5 9L10 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
                   </div>
                 )}
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm transition-transform duration-200 group-hover:scale-105"
+                <div className="relative w-14 h-14 rounded-2xl overflow-hidden shadow-sm transition-transform duration-200 group-hover:scale-105"
                   style={isSel ? { boxShadow: `0 4px 16px ${bank.brand}44` } : {}}>
-                  {bank.logo}
+                  <Image src={bank.logo} alt={bank.name} fill className="object-cover" />
                 </div>
                 <div className="text-center w-full">
                   <p className="text-sm font-bold leading-tight" style={{ color: isSel ? bank.brand : 'var(--gray-900)' }}>

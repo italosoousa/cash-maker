@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Plus, Filter, ChevronLeft, ChevronRight,
   TrendingUp, TrendingDown, Wallet, Search, X, Download,
@@ -83,7 +84,8 @@ const SOURCE_LABELS: Record<Exclude<TxSource, ''>, string> = {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
-export default function TransactionsPage() {
+function TransactionsPageInner() {
+  const searchParams = useSearchParams()
   const [data, setData]             = useState<PaginatedResult | null>(null)
   const [loading, setLoading]       = useState(true)
   const [categories, setCategories] = useState<CategoryData[]>([])
@@ -94,7 +96,7 @@ export default function TransactionsPage() {
   const [showFilters, setShowFilters]     = useState(false)
 
   // Filtros
-  const [search,     setSearch]     = useState('')
+  const [search,     setSearch]     = useState(() => searchParams.get('search') ?? '')
   const [type,       setType]       = useState<TxType>('ALL')
   const [categoryId, setCategoryId] = useState('')
   const [source,     setSource]     = useState<TxSource>('')
@@ -604,5 +606,13 @@ export default function TransactionsPage() {
         <Plus size={24} />
       </button>
     </>
+  )
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense>
+      <TransactionsPageInner />
+    </Suspense>
   )
 }

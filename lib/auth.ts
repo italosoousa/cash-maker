@@ -1,12 +1,21 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import Google      from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { loginSchema } from '@/lib/validations/auth'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   session: { strategy: 'jwt' },
   providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [Google({
+          clientId:     process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        })]
+      : []
+    ),
     Credentials({
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials)
@@ -19,7 +28,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!user) return null
 
-        const valid = await bcrypt.compare(parsed.data.password, user.password)
+        const valid = await bcrypt.compare(parsed.data.password, user.password ?? '')
         if (!valid) return null
 
         return { id: user.id, name: user.name, email: user.email }
