@@ -607,33 +607,33 @@ function DonutDistrib({ categories, monthLabel, loading }: { categories: Categor
         </div>
       </div>
 
-      <div className="flex flex-col items-center px-5 pb-5">
+      <div className="flex items-center gap-5 px-5 pb-5 min-h-0 w-full">
         {loading ? (
-          <div className="flex flex-col items-center gap-4 w-full py-4">
-            <div className="skeleton w-[176px] h-[176px] rounded-full" />
-            <div className="grid grid-cols-2 gap-2.5 w-full">
+          <>
+            <div className="skeleton w-[40%] aspect-square rounded-full shrink-0" />
+            <div className="flex flex-col gap-2.5 flex-1 min-w-0">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="skeleton h-3 rounded" />
               ))}
             </div>
-          </div>
+          </>
         ) : categories.length === 0 ? (
-          <div className="flex flex-col items-center py-10 gap-2 text-[var(--gray-500)]">
+          <div className="flex flex-col items-center py-10 gap-2 text-[var(--gray-500)] w-full">
             <LucideIcons.PieChart size={32} strokeWidth={1.5} className="text-[var(--gray-300)]" />
             <p className="text-xs">Nenhuma despesa no período</p>
           </div>
         ) : (
           <>
-            {/* Donut */}
-            <div className="relative w-[176px] h-[176px] my-1.5">
+            {/* Donut — 40% do container, aspect-square → cresce com o card */}
+            <div className="relative w-[40%] aspect-square shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsPieChart>
                   <Pie
                     data={top6}
                     cx="50%"
                     cy="50%"
-                    innerRadius={74}
-                    outerRadius={94}
+                    innerRadius="62%"
+                    outerRadius="80%"
                     paddingAngle={2}
                     dataKey="total"
                     animationDuration={600}
@@ -645,25 +645,25 @@ function DonutDistrib({ categories, monthLabel, loading }: { categories: Categor
                   </Pie>
                 </RechartsPieChart>
               </ResponsiveContainer>
-              {/* Center label */}
+              {/* Center label — posicionado em cima do SVG */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-[9.5px] font-semibold uppercase tracking-[.12em] text-[var(--gray-500)]">Gastos</p>
-                <p className="text-[21px] font-[var(--font-mono)] font-bold text-[var(--status-expense)] tabular-nums leading-tight mt-0.5">
+                <p className="text-[9px] font-semibold uppercase tracking-[.12em] text-[var(--gray-500)]">Gastos</p>
+                <p className="text-[15px] font-[var(--font-mono)] font-bold text-[var(--status-expense)] tabular-nums leading-tight mt-0.5">
                   {fmt(total)}
                 </p>
               </div>
             </div>
 
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-x-3.5 gap-y-2.5 w-full mt-2">
+            {/* Legend — ocupa o espaço restante (60% - gap) */}
+            <div className="flex flex-col justify-center gap-[9px] flex-1 min-w-0">
               {top6.map(cat => (
                 <div key={cat.categoryId ?? cat.name} className="flex items-center gap-2 min-w-0">
                   <span
-                    className="w-[9px] h-[9px] rounded-[3px] shrink-0"
+                    className="w-2 h-2 rounded-[3px] shrink-0"
                     style={{ background: cat.color }}
                   />
-                  <span className="text-[12px] text-[var(--gray-700)] flex-1 truncate">{cat.name}</span>
-                  <span className="text-[11.5px] font-bold font-[var(--font-mono)] text-[var(--gray-700)] shrink-0">
+                  <span className="text-[12.5px] text-[var(--gray-700)] truncate flex-1 leading-none">{cat.name}</span>
+                  <span className="text-[12px] font-bold font-[var(--font-mono)] text-[var(--gray-600)] shrink-0 tabular-nums">
                     {cat.percentage}%
                   </span>
                 </div>
@@ -954,7 +954,7 @@ export function DashboardClient({ firstName }: { firstName: string }) {
       </div>
 
       {/* ROW 2 — KPIs */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <KPICard
           label="Receitas"
           value={s?.periodIncome}
