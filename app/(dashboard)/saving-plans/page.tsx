@@ -43,6 +43,17 @@ interface Summary {
   totalPlans:   number
 }
 
+interface SnapshotData {
+  month:   number
+  year:    number
+  balance: string
+}
+
+interface ChartPoint {
+  label: string
+  value: number
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ICON_OPTIONS = [
@@ -99,15 +110,32 @@ function getLucideIcon(name: string): React.ElementType {
   return (LucideIcons as unknown as Record<string, React.ElementType>)[pascal] ?? PiggyBank
 }
 
-function mockMonthlyData(plan: SavingPlanData) {
-  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-  const now    = new Date()
-  const curM   = now.getMonth()
-  const step   = plan.currentAmount / Math.max(curM + 1, 1)
-  return months.slice(0, curM + 1).map((label, i) => ({
-    label,
-    value: Math.round(step * (i + 1) * (0.85 + Math.random() * 0.3)),
-  }))
+const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function monthLabel(month: number, year: number) {
+  return `${MONTH_LABELS[month - 1]}/${String(year).slice(2)}`
+}
+
+/** Combina o ponto de criação do plano com os snapshots reais (FR-008) */
+function buildChartData(plan: SavingPlanData, snapshots: SnapshotData[]): ChartPoint[] {
+  const [createdYear, createdMonth] = new Date(plan.createdAt)
+    .toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+    .split('-')
+    .map(Number)
+
+  const creationPoint: ChartPoint = {
+    label: monthLabel(createdMonth, createdYear),
+    value: plan.currentAmount,
+  }
+
+  if (snapshots.length === 0) return [creationPoint]
+
+  const points = snapshots.map(s => ({ label: monthLabel(s.month, s.year), value: Number(s.balance) }))
+
+  const first = snapshots[0]
+  if (first.month === createdMonth && first.year === createdYear) return points
+
+  return [creationPoint, ...points]
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -225,7 +253,23 @@ function DetailPanel({ plan }: { plan: SavingPlanData }) {
   const status = STATUS_CONFIG[plan.status]
   const StatusIcon = status.icon
   const tips   = SAVING_TIPS[plan.icon] ?? SAVING_TIPS.default
-  const chartData = mockMonthlyData(plan)
+
+  const [snapshots, setSnapshots]           = useState<SnapshotData[] | null>(null)
+  const [snapshotsError, setSnapshotsError] = useState(false)
+
+  useEffect(() => {
+    setSnapshots(null)
+    setSnapshotsError(false)
+    fetch(`/api/saving-plans/${plan.id}/snapshots`)
+      .then(async res => {
+        const json = await res.json().catch(() => null)
+        if (!res.ok || !json?.data) throw new Error()
+        setSnapshots(json.data)
+      })
+      .catch(() => setSnapshotsError(true))
+  }, [plan.id])
+
+  const chartData = snapshots ? buildChartData(plan, snapshots) : null
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -318,7 +362,17 @@ function DetailPanel({ plan }: { plan: SavingPlanData }) {
             Este ano
           </span>
         </div>
-        {chartData.length >= 2 ? (
+        {snapshotsError ? (
+          <div className="h-[120px] flex items-center justify-center text-center px-4">
+            <p className="text-[12px] text-[var(--ink-ghost)]">
+              Não foi possível carregar a evolução deste plano. Tente novamente mais tarde.
+            </p>
+          </div>
+        ) : chartData === null ? (
+          <div className="h-[120px] flex items-center justify-center">
+            <p className="text-[12px] text-[var(--ink-ghost)]">Carregando evolução...</p>
+          </div>
+        ) : chartData.length >= 2 ? (
           <ResponsiveContainer width="100%" height={120}>
             <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,200,224,0.3)" vertical={false} />
@@ -355,8 +409,10 @@ function DetailPanel({ plan }: { plan: SavingPlanData }) {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-[120px] flex items-center justify-center">
-            <p className="text-[12px] text-[var(--ink-ghost)]">Dados insuficientes para o gráfico</p>
+          <div className="h-[120px] flex items-center justify-center text-center px-4">
+            <p className="text-[12px] text-[var(--ink-ghost)]">
+              Ainda não há histórico mensal — o gráfico mostrará a evolução a partir do próximo snapshot.
+            </p>
           </div>
         )}
       </div>

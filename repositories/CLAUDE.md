@@ -11,6 +11,7 @@ Prisma queries live here. No business logic — only data access.
 ## Files
 - `transaction.repository.ts` — findMany (with filters), findById, create, update, softDelete, getBalance, getPaginated
 - `category.repository.ts` — findAll, findById, create, update, delete, hasTransactions
+- `saving-plan-snapshot.repository.ts` — findHistory (ordered by year/month ASC), upsertForMonth (unique `[savingPlanId, month, year]`), findActiveSavingPlans
 
 ## Naming convention
 ```ts

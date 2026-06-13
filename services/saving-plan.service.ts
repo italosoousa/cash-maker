@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { Decimal } from '@prisma/client/runtime/library'
+import { monthYearBRT } from '@/services/saving-plan-snapshot.service'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -111,18 +112,33 @@ export const savingPlanService = {
   },
 
   async create(userId: string, data: CreateSavingPlanInput): Promise<SavingPlanData> {
-    const plan = await prisma.savingPlan.create({
-      data: {
-        userId,
-        name:          data.name,
-        icon:          data.icon,
-        color:         data.color,
-        targetAmount:  data.targetAmount,
-        currentAmount: data.currentAmount,
-        dueDate:       data.dueDate ? new Date(data.dueDate) : null,
-        notes:         data.notes ?? null,
-      },
+    const { month, year } = monthYearBRT(new Date())
+
+    // RN07 — criação do plano + snapshot inicial do mês corrente são atômicas.
+    // Usa transação interativa pois o snapshot depende do `id` gerado pelo create.
+    const plan = await prisma.$transaction(async (tx) => {
+      const created = await tx.savingPlan.create({
+        data: {
+          userId,
+          name:          data.name,
+          icon:          data.icon,
+          color:         data.color,
+          targetAmount:  data.targetAmount,
+          currentAmount: data.currentAmount,
+          dueDate:       data.dueDate ? new Date(data.dueDate) : null,
+          notes:         data.notes ?? null,
+        },
+      })
+
+      await tx.savingPlanSnapshot.upsert({
+        where:  { savingPlanId_month_year: { savingPlanId: created.id, month, year } },
+        create: { savingPlanId: created.id, month, year, balance: data.currentAmount },
+        update: { balance: data.currentAmount },
+      })
+
+      return created
     })
+
     return toData(plan)
   },
 
@@ -130,18 +146,31 @@ export const savingPlanService = {
     const existing = await prisma.savingPlan.findFirst({ where: { id, userId, deletedAt: null } })
     if (!existing) throw new Error('Plano não encontrado')
 
-    const plan = await prisma.savingPlan.update({
-      where: { id },
-      data: {
-        ...(data.name          !== undefined && { name:          data.name }),
-        ...(data.icon          !== undefined && { icon:          data.icon }),
-        ...(data.color         !== undefined && { color:         data.color }),
-        ...(data.targetAmount  !== undefined && { targetAmount:  data.targetAmount }),
-        ...(data.currentAmount !== undefined && { currentAmount: data.currentAmount }),
-        ...(data.dueDate       !== undefined && { dueDate: data.dueDate ? new Date(data.dueDate) : null }),
-        ...(data.notes         !== undefined && { notes:         data.notes }),
-      },
-    })
+    const updateData = {
+      ...(data.name          !== undefined && { name:          data.name }),
+      ...(data.icon          !== undefined && { icon:          data.icon }),
+      ...(data.color         !== undefined && { color:         data.color }),
+      ...(data.targetAmount  !== undefined && { targetAmount:  data.targetAmount }),
+      ...(data.currentAmount !== undefined && { currentAmount: data.currentAmount }),
+      ...(data.dueDate       !== undefined && { dueDate: data.dueDate ? new Date(data.dueDate) : null }),
+      ...(data.notes         !== undefined && { notes:         data.notes }),
+    }
+
+    if (data.currentAmount === undefined) {
+      const plan = await prisma.savingPlan.update({ where: { id }, data: updateData })
+      return toData(plan)
+    }
+
+    // RN07 — atualização do plano + snapshot do mês corrente são atômicas (FR-003).
+    const { month, year } = monthYearBRT(new Date())
+    const [plan] = await prisma.$transaction([
+      prisma.savingPlan.update({ where: { id }, data: updateData }),
+      prisma.savingPlanSnapshot.upsert({
+        where:  { savingPlanId_month_year: { savingPlanId: id, month, year } },
+        create: { savingPlanId: id, month, year, balance: data.currentAmount },
+        update: { balance: data.currentAmount },
+      }),
+    ])
     return toData(plan)
   },
 

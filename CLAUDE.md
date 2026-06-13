@@ -371,3 +371,13 @@ NEXTAUTH_SECRET=""        # string aleatória segura
 NEXTAUTH_URL=""           # http://localhost:3000 (dev) / URL prod
 RESEND_API_KEY=""         # e-mail transacional (futuro)
 ```
+
+<!-- SPECKIT START -->
+Feature em desenvolvimento: **Saving Plan Snapshots — Evolução Real**
+(branch `001-saving-plan-snapshots`). Para contexto detalhado de
+tecnologias, estrutura de arquivos, contratos de API e comandos de
+validação desta feature, leia o plano em
+[specs/001-saving-plan-snapshots/plan.md](specs/001-saving-plan-snapshots/plan.md)
+(e os artefatos relacionados: `research.md`, `data-model.md`,
+`contracts/`, `quickstart.md` na mesma pasta).
+<!-- SPECKIT END -->

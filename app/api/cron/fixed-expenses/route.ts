@@ -1,5 +1,6 @@
-import { NextResponse }          from 'next/server'
-import { fixedExpenseService }  from '@/services/fixed-expense.service'
+import { NextResponse }              from 'next/server'
+import { fixedExpenseService }       from '@/services/fixed-expense.service'
+import { savingPlanSnapshotService } from '@/services/saving-plan-snapshot.service'
 
 /**
  * POST /api/cron/fixed-expenses
@@ -26,7 +27,25 @@ export async function POST(request: Request) {
       result.errors.length ? `errors=${JSON.stringify(result.errors)}` : '',
     )
 
-    return NextResponse.json({ data: result })
+    const now = new Date()
+    const day = Number(now.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }).split('-')[2])
+
+    const data: { fixedExpenses: typeof result; savingPlanSnapshots?: Awaited<ReturnType<typeof savingPlanSnapshotService.runMonthlySnapshot>> } = {
+      fixedExpenses: result,
+    }
+
+    if (day === 1) {
+      const snapshotResult = await savingPlanSnapshotService.runMonthlySnapshot(now)
+
+      console.log(
+        `[cron/fixed-expenses] saving-plan-snapshots processed=${snapshotResult.processed} total=${snapshotResult.total}`,
+        snapshotResult.errors.length ? `errors=${JSON.stringify(snapshotResult.errors)}` : '',
+      )
+
+      data.savingPlanSnapshots = snapshotResult
+    }
+
+    return NextResponse.json({ data })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erro interno'
     console.error('[cron/fixed-expenses] fatal error:', message)

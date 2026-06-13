@@ -161,9 +161,32 @@ model SavingPlan {
   // Relações
   userId        String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snapshots     SavingPlanSnapshot[]
 
   @@index([userId])
   @@map("saving_plans")
+}
+
+// =============================================================================
+// SAVING PLAN SNAPSHOT
+// Registro mensal do saldo de um plano de poupança (RN06 — evolução real).
+// =============================================================================
+model SavingPlanSnapshot {
+  id           String   @id @default(cuid())
+  balance      Decimal  @db.Decimal(12, 2)
+  month        Int      // 1-12, em America/Sao_Paulo
+  year         Int      // em America/Sao_Paulo
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relações
+  savingPlanId String
+  savingPlan   SavingPlan @relation(fields: [savingPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([savingPlanId, month, year])
+  @@index([savingPlanId])
+  @@map("saving_plan_snapshots")
 }
 
 // =============================================================================
